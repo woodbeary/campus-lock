@@ -55,6 +55,11 @@ To verify the latest packaged registered-device IPA:
 ```
 
 This checks the app plus both shield extension embedded profiles, Family Controls entitlements, registered device inclusion, code signatures, and SHA-256 hash.
+For an exported ad hoc IPA, require distribution-style signing explicitly:
+
+```sh
+IPA_PATH="$(cat build/export/latest-adhoc-ipa.path)" EXPECTED_SIGNING=ad-hoc ./scripts/verify-ipa-artifact.sh
+```
 
 To create the three ad hoc profiles after Team Admin credentials are available:
 
