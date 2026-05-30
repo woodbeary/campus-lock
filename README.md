@@ -51,3 +51,5 @@ The script expects the local Mac/Xcode account to be release-ready:
 - Family Controls is approved for the main app and both shield extension bundle IDs.
 
 Current local audit details are in `READINESS_AUDIT.md`.
+
+The release is considered complete only when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`.
