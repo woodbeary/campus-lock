@@ -25,6 +25,18 @@ This runs Swift package tests, regenerates the Xcode project, typechecks against
 It also compiles the iOS unit-test bundle and UI-test runner against the iPhoneOS SDK even when no simulator/device destination is eligible.
 Swift package coverage is enforced at 80% minimum line coverage for the core domain target.
 
+To execute the iOS UI/E2E tests on an eligible device or simulator:
+
+```sh
+./scripts/run-ui-tests.sh
+```
+
+If Xcode cannot auto-detect a concrete eligible destination, pass one explicitly:
+
+```sh
+E2E_DESTINATION='id=<device-or-simulator-id>' ./scripts/run-ui-tests.sh
+```
+
 To run only the Swift package coverage gate:
 
 ```sh
