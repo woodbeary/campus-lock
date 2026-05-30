@@ -23,7 +23,14 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 
 This runs Swift package tests, checks JavaScript/TypeScript gates when a `package.json`, `jest.config.*`, or `tsconfig.json` exists, lints release scripts/plists/manifests, regenerates the Xcode project, typechecks against the installed iPhoneOS SDK, and performs an unsigned iPhoneOS build of the app plus shield extensions.
 It also compiles the iOS unit-test bundle and UI-test runner against the iPhoneOS SDK even when no simulator/device destination is eligible.
+It includes a native UI layout guard for the fixed tab footer, bottom action dock, shared screen shell, and no `GeometryReader` crowding regressions.
 Swift package coverage is enforced at 80% minimum line coverage for the core domain target.
+
+To run only the native UI layout guard:
+
+```sh
+./scripts/verify-ui-layout.sh
+```
 
 To run the full release-readiness gate, including E2E execution and ad hoc export checks:
 
