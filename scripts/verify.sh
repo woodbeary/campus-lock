@@ -51,6 +51,9 @@ PY
   done < <(echo "$js_gate_files" | grep '/tsconfig.json$' || true)
 fi
 
+echo "== Release tooling lint =="
+./scripts/verify-release-tooling.sh
+
 echo "== Generate Xcode project =="
 xcodegen generate
 

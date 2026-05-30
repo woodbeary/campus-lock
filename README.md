@@ -21,7 +21,7 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 ./scripts/verify.sh
 ```
 
-This runs Swift package tests, checks JavaScript/TypeScript gates when a `package.json`, `jest.config.*`, or `tsconfig.json` exists, regenerates the Xcode project, typechecks against the installed iPhoneOS SDK, and performs an unsigned iPhoneOS build of the app plus shield extensions.
+This runs Swift package tests, checks JavaScript/TypeScript gates when a `package.json`, `jest.config.*`, or `tsconfig.json` exists, lints release scripts/plists/manifests, regenerates the Xcode project, typechecks against the installed iPhoneOS SDK, and performs an unsigned iPhoneOS build of the app plus shield extensions.
 It also compiles the iOS unit-test bundle and UI-test runner against the iPhoneOS SDK even when no simulator/device destination is eligible.
 Swift package coverage is enforced at 80% minimum line coverage for the core domain target.
 
