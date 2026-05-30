@@ -3,9 +3,13 @@ import SwiftUI
 enum CampusTheme {
     static let background = Color(.systemGroupedBackground)
     static let surface = Color(.secondarySystemGroupedBackground)
-    static let elevated = Color(.systemBackground)
+    static let elevated = Color(.secondarySystemGroupedBackground)
     static let accent = Color.blue
     static let success = Color.green
+    static let footerReserve: CGFloat = 116
+    static let footerHeight: CGFloat = 64
+    static let screenHorizontalPadding: CGFloat = 20
+    static let screenTopPadding: CGFloat = 14
 }
 
 struct CampusCard: ViewModifier {
@@ -15,6 +19,10 @@ struct CampusCard: ViewModifier {
         content
             .padding(padding)
             .background(CampusTheme.elevated, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .stroke(Color(.separator).opacity(0.22), lineWidth: 0.5)
+            }
     }
 }
 
@@ -34,9 +42,12 @@ struct CampusScreenHeader: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.title2.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
                 Text(subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
@@ -46,17 +57,34 @@ struct CampusScreenHeader: View {
 
 struct CampusBottomBar<Content: View>: View {
     private let content: Content
+    private let footerOffset: CGFloat
 
-    init(@ViewBuilder content: () -> Content) {
+    init(footerOffset: CGFloat = 0, @ViewBuilder content: () -> Content) {
+        self.footerOffset = footerOffset
         self.content = content()
     }
 
     var body: some View {
-        content
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 18)
-            .background(.regularMaterial)
+        if footerOffset > 0 {
+            content
+                .frame(maxWidth: .infinity)
+                .padding(10)
+                .frame(maxWidth: .infinity)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .stroke(Color(.separator).opacity(0.32), lineWidth: 0.5)
+                }
+                .shadow(color: .black.opacity(0.10), radius: 16, x: 0, y: 6)
+                .padding(.horizontal, 16)
+                .padding(.bottom, footerOffset)
+        } else {
+            content
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 16)
+                .background(.regularMaterial)
+        }
     }
 }
 
@@ -65,7 +93,7 @@ struct CampusPrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
+            .frame(height: 54)
             .foregroundStyle(Color(.systemBackground))
             .background(Color.primary.opacity(configuration.isPressed ? 0.82 : 1), in: Capsule())
             .contentShape(Capsule())
@@ -77,7 +105,7 @@ struct CampusSecondaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
+            .frame(height: 54)
             .foregroundStyle(.primary)
             .background(Color(.tertiarySystemGroupedBackground), in: Capsule())
             .overlay {

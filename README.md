@@ -21,9 +21,25 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 ./scripts/verify.sh
 ```
 
-This runs Swift package tests, regenerates the Xcode project, typechecks against the installed iPhoneOS SDK, and performs an unsigned iPhoneOS build of the app plus shield extensions.
+This runs Swift package tests, checks JavaScript/TypeScript gates when a `package.json`, `jest.config.*`, or `tsconfig.json` exists, regenerates the Xcode project, typechecks against the installed iPhoneOS SDK, and performs an unsigned iPhoneOS build of the app plus shield extensions.
 It also compiles the iOS unit-test bundle and UI-test runner against the iPhoneOS SDK even when no simulator/device destination is eligible.
 Swift package coverage is enforced at 80% minimum line coverage for the core domain target.
+
+To run the full release-readiness gate, including E2E execution and ad hoc export checks:
+
+```sh
+./scripts/verify-release-ready.sh
+```
+
+This command is intentionally stricter than `./scripts/verify.sh`; it fails until UI tests execute on an eligible iOS destination and `./scripts/archive-adhoc.sh` produces a shareable archive export.
+
+To smoke-test the latest installed registered-device build:
+
+```sh
+./scripts/smoke-device-launch.sh
+```
+
+This requires the connected iPhone to be awake and unlocked.
 
 To execute the iOS UI/E2E tests on an eligible device or simulator:
 
@@ -79,8 +95,8 @@ The script expects the local Mac/Xcode account to be release-ready:
 - Xcode is signed in to Apple Developer team `YOUR_TEAM_ID`.
 - Provisioning profiles can be created or downloaded for the app and shield extensions.
 - The matching iOS platform for the connected iPhone is installed in Xcode Components.
-- Family Controls is approved for the main app and both shield extension bundle IDs.
+- Family Controls Development and Distribution are approved for the main app and both shield extension bundle IDs.
 
-Current local audit details are in `READINESS_AUDIT.md`.
+Current local audit details are in `READINESS_AUDIT.md` and `COMPLETION_AUDIT.md`.
 
-The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists and `./scripts/install-development-build.sh` installs it successfully.
+The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists, `./scripts/install-development-build.sh` installs it successfully, and the installed app launch/visual smoke test passes on the unlocked phone.

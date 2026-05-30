@@ -8,56 +8,68 @@ struct ZoneView: View {
 
     var body: some View {
         @Bindable var store = store
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                CampusScreenHeader(
-                    title: "Zone",
-                    subtitle: "Draw the classroom radius around your current location.",
-                    symbol: "location"
-                )
-                ZoneMapCard(center: store.state.zone.center, radius: store.state.zone.radiusMeters)
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("Radius")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("\(Int(store.state.zone.radiusMeters)) meters")
-                        .font(.title2.weight(.semibold))
-                    Slider(
-                        value: Binding(
-                            get: { store.state.zone.radiusMeters },
-                            set: { store.updateRadius($0) }
-                        ),
-                        in: 50...500,
-                        step: 10
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    CampusScreenHeader(
+                        title: "Zone",
+                        subtitle: "Draw the classroom radius around your current location.",
+                        symbol: "location"
                     )
-                    .accessibilityIdentifier("zone.radius")
+                    ZoneMapCard(
+                        center: store.state.zone.center,
+                        radius: store.state.zone.radiusMeters,
+                        height: mapHeight(for: proxy.size.height)
+                    )
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Radius")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("\(Int(store.state.zone.radiusMeters)) meters")
+                            .font(.title2.weight(.semibold))
+                        Slider(
+                            value: Binding(
+                                get: { store.state.zone.radiusMeters },
+                                set: { store.updateRadius($0) }
+                            ),
+                            in: 50...500,
+                            step: 10
+                        )
+                        .accessibilityIdentifier("zone.radius")
+                    }
+                    .campusCard()
                 }
-                .campusCard()
+                .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+                .padding(.top, CampusTheme.screenTopPadding)
+                .padding(.bottom, CampusTheme.footerReserve + 96)
+                .campusLoadIn()
             }
-            .padding(20)
-            .padding(.bottom, 96)
-            .campusLoadIn()
-        }
-        .background(CampusTheme.background)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusBottomBar {
-                Button("Enable Zone") {
-                    didEnableZone.toggle()
-                    store.startFocus()
-                    store.selectedTab = .lock
+            .background(CampusTheme.background)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
+                    Button("Enable Zone") {
+                        didEnableZone.toggle()
+                        store.startFocus()
+                        store.selectedTab = .lock
+                    }
+                    .buttonStyle(CampusPrimaryButtonStyle())
+                    .accessibilityIdentifier("zone.enable")
                 }
-                .buttonStyle(CampusPrimaryButtonStyle())
-                .accessibilityIdentifier("zone.enable")
             }
         }
         .sensoryFeedback(.selection, trigger: Int(store.state.zone.radiusMeters))
         .sensoryFeedback(.success, trigger: didEnableZone)
+    }
+
+    private func mapHeight(for screenHeight: CGFloat) -> CGFloat {
+        min(340, max(250, screenHeight * 0.42))
     }
 }
 
 private struct ZoneMapCard: View {
     var center: Coordinate
     var radius: Double
+    var height: CGFloat
     @State private var cameraPosition: MapCameraPosition = .automatic
 
     var body: some View {
@@ -87,9 +99,12 @@ private struct ZoneMapCard: View {
                 .padding(.bottom, 14)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 380)
+        .frame(height: height)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .campusGlass(cornerRadius: 28)
+        .overlay {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color(.separator).opacity(0.24), lineWidth: 0.5)
+        }
         .onAppear(perform: refreshCamera)
         .onChange(of: center) { _, _ in refreshCamera() }
         .onChange(of: radius) { _, _ in refreshCamera() }

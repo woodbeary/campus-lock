@@ -16,13 +16,14 @@ struct AttendanceView: View {
                 activeClassCard
                 scheduleList
             }
-            .padding(20)
-            .padding(.bottom, 112)
+            .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+            .padding(.top, CampusTheme.screenTopPadding)
+            .padding(.bottom, CampusTheme.footerReserve + 112)
             .campusLoadIn()
         }
         .background(CampusTheme.background)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusBottomBar {
+            CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
                 HStack(spacing: 12) {
                     Button("Enter") {
                         attendanceActionCount += 1
@@ -53,8 +54,11 @@ struct AttendanceView: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(store.state.selectedClass.title)
                     .font(.title2.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
                 Text("Period \(store.state.selectedClass.period) · \(store.state.selectedClass.room)")
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
                 Text(store.state.isLocked ? "Present" : "Ready")
                     .font(.caption.weight(.medium))
                     .padding(.horizontal, 10)
@@ -81,9 +85,12 @@ struct AttendanceView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(classSession.title)
                                 .font(.headline)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.82)
                             Text(classSession.startsAt.formatted(date: .omitted, time: .shortened))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                                .lineLimit(1)
                         }
                         Spacer()
                         status(for: classSession)

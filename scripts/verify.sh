@@ -6,6 +6,51 @@ cd "$(dirname "$0")/.."
 echo "== Swift package tests with coverage =="
 ./scripts/test-coverage.sh
 
+echo "== JavaScript/TypeScript gates =="
+js_gate_files="$(
+  find . \
+    \( -name package.json -o -name tsconfig.json -o -name 'jest.config.*' \) \
+    -not -path './.git/*' \
+    -not -path './.build/*' \
+    -not -path './build/*' \
+    -not -path './node_modules/*' \
+    -print
+)"
+
+if [[ -z "$js_gate_files" ]]; then
+  echo "No JavaScript or TypeScript project detected; Jest and noEmit are not applicable."
+else
+  echo "$js_gate_files"
+
+  while IFS= read -r package_json; do
+    package_dir="$(dirname "$package_json")"
+    has_test_script="$(
+      python3 - "$package_json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1]) as handle:
+    package = json.load(handle)
+
+print("yes" if package.get("scripts", {}).get("test") else "no")
+PY
+    )"
+
+    if [[ "$has_test_script" == "yes" ]]; then
+      (cd "$package_dir" && pnpm test)
+    elif find "$package_dir" -maxdepth 1 -name 'jest.config.*' | grep -q .; then
+      (cd "$package_dir" && pnpm exec jest)
+    else
+      echo "No Jest test script/config in ${package_dir}; skipping Jest."
+    fi
+  done < <(echo "$js_gate_files" | grep '/package.json$' || true)
+
+  while IFS= read -r tsconfig; do
+    ts_dir="$(dirname "$tsconfig")"
+    (cd "$ts_dir" && pnpm exec tsc --noEmit -p "$(basename "$tsconfig")")
+  done < <(echo "$js_gate_files" | grep '/tsconfig.json$' || true)
+fi
+
 echo "== Generate Xcode project =="
 xcodegen generate
 

@@ -24,13 +24,14 @@ struct InsightsView: View {
                 InsightCard(title: "Signal", value: "Long passing periods", detail: "Average is up 38 sec this week.")
                 InsightCard(title: "Export", value: "Attendance · focus · zones", detail: "CSV stays local until shared.")
             }
-            .padding(20)
-            .padding(.bottom, 96)
+            .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+            .padding(.top, CampusTheme.screenTopPadding)
+            .padding(.bottom, CampusTheme.footerReserve + 96)
             .campusLoadIn()
         }
         .background(CampusTheme.background)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusBottomBar {
+            CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
                 if let exportURL, !isPreparingExport {
                     ShareLink(item: exportURL) {
                         Text("Share CSV")
@@ -84,9 +85,12 @@ private struct MetricTile: View {
             Text(value)
                 .font(.title2.weight(.semibold))
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.74)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .campusCard()

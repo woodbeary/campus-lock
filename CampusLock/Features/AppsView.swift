@@ -20,13 +20,14 @@ struct AppsView: View {
                 selectedSummary
                 allowedSummary
             }
-            .padding(20)
-            .padding(.bottom, 96)
+            .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+            .padding(.top, CampusTheme.screenTopPadding)
+            .padding(.bottom, CampusTheme.footerReserve + 96)
             .campusLoadIn()
         }
         .background(CampusTheme.background)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusBottomBar {
+            CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
                 nativePickerButton
             }
         }

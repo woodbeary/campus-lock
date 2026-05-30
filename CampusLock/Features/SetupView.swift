@@ -14,8 +14,8 @@ struct SetupView: View {
                     mvpRule
                 }
                 .frame(maxWidth: .infinity, minHeight: max(0, proxy.size.height - 112), alignment: .topLeading)
-                .padding(.horizontal, 20)
-                .padding(.top, 22)
+                .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+                .padding(.top, CampusTheme.screenTopPadding + 8)
                 .padding(.bottom, 120)
                 .campusLoadIn()
             }
