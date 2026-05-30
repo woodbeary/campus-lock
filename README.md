@@ -57,6 +57,14 @@ CONFIRM_CREATE_ADHOC_PROFILES=1 ./scripts/create-adhoc-profiles.sh
 
 This command is guarded because it mutates Apple Developer state.
 
+To generate deterministic manual export options from installed Family Controls ad hoc profiles:
+
+```sh
+./scripts/generate-export-options.sh
+```
+
+`./scripts/archive-adhoc.sh` runs this automatically unless `EXPORT_OPTIONS` is set.
+
 To inspect disk space blockers without deleting anything:
 
 ```sh
