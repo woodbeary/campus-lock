@@ -10,7 +10,7 @@ struct ZoneView: View {
         @Bindable var store = store
         GeometryReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: CampusTheme.screenSpacing) {
                     CampusScreenHeader(
                         title: "Zone",
                         subtitle: "Draw the classroom radius around your current location.",
@@ -41,20 +41,18 @@ struct ZoneView: View {
                 }
                 .padding(.horizontal, CampusTheme.screenHorizontalPadding)
                 .padding(.top, CampusTheme.screenTopPadding)
-                .padding(.bottom, CampusTheme.footerReserve + 96)
+                .padding(.bottom, CampusTheme.scrollBottomPadding())
                 .campusLoadIn()
             }
             .background(CampusTheme.background)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
-                    Button("Enable Zone") {
-                        didEnableZone.toggle()
-                        store.startFocus()
-                        store.selectedTab = .lock
-                    }
-                    .buttonStyle(CampusPrimaryButtonStyle())
-                    .accessibilityIdentifier("zone.enable")
+            .campusFixedAction {
+                Button("Enable Zone") {
+                    didEnableZone.toggle()
+                    store.startFocus()
+                    store.selectedTab = .lock
                 }
+                .buttonStyle(CampusPrimaryButtonStyle())
+                .accessibilityIdentifier("zone.enable")
             }
         }
         .sensoryFeedback(.selection, trigger: Int(store.state.zone.radiusMeters))
@@ -62,7 +60,7 @@ struct ZoneView: View {
     }
 
     private func mapHeight(for screenHeight: CGFloat) -> CGFloat {
-        min(340, max(250, screenHeight * 0.42))
+        min(330, max(230, screenHeight * 0.38))
     }
 }
 

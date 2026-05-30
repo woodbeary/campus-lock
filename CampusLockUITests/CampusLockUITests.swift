@@ -14,9 +14,11 @@ final class CampusLockUITests: XCTestCase {
         XCTAssertTrue(app.buttons["tab.lock"].waitForExistence(timeout: 5))
         assertFooterTabsStayReachable(app)
         XCTAssertTrue(app.buttons["lock.startFocus"].waitForExistence(timeout: 5))
+        assertActionSitsAboveFooter("lock.startFocus", app: app)
 
         app.buttons["lock.startFocus"].tap()
         XCTAssertTrue(app.staticTexts["lock.lockedTitle"].waitForExistence(timeout: 3))
+        assertActionSitsAboveFooter("lock.unlock", app: app)
 
         app.buttons["lock.unlock"].tap()
         XCTAssertTrue(app.staticTexts["lock.unlockedTitle"].waitForExistence(timeout: 3))
@@ -43,7 +45,7 @@ final class CampusLockUITests: XCTestCase {
         let action = app.buttons[actionIdentifier]
         XCTAssertTrue(action.waitForExistence(timeout: 5), "\(actionIdentifier) should exist")
         XCTAssertTrue(action.isHittable, "\(actionIdentifier) should be reachable")
-        XCTAssertGreaterThan(action.frame.minY, app.frame.midY, "\(actionIdentifier) should stay in the predictable bottom action area")
+        assertActionSitsAboveFooter(actionIdentifier, app: app)
     }
 
     private func assertFooterTabsStayReachable(_ app: XCUIApplication) {
@@ -53,5 +55,15 @@ final class CampusLockUITests: XCTestCase {
             XCTAssertTrue(tab.isHittable, "\(tabIdentifier) should be hittable")
             XCTAssertGreaterThan(tab.frame.midY, app.frame.midY, "\(tabIdentifier) should stay in the fixed footer area")
         }
+    }
+
+    private func assertActionSitsAboveFooter(_ actionIdentifier: String, app: XCUIApplication) {
+        let action = app.buttons[actionIdentifier]
+        let footer = app.buttons["tab.lock"]
+        XCTAssertTrue(action.waitForExistence(timeout: 5), "\(actionIdentifier) should exist")
+        XCTAssertTrue(footer.waitForExistence(timeout: 5), "footer should exist")
+        XCTAssertTrue(action.isHittable, "\(actionIdentifier) should be hittable")
+        XCTAssertGreaterThan(action.frame.minY, app.frame.midY, "\(actionIdentifier) should stay in the predictable bottom action area")
+        XCTAssertLessThan(action.frame.maxY, footer.frame.minY, "\(actionIdentifier) should not overlap the footer")
     }
 }

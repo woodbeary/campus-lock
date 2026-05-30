@@ -6,10 +6,16 @@ enum CampusTheme {
     static let elevated = Color(.secondarySystemGroupedBackground)
     static let accent = Color.blue
     static let success = Color.green
-    static let footerReserve: CGFloat = 116
-    static let footerHeight: CGFloat = 64
+    static let footerReserve: CGFloat = 104
+    static let footerHeight: CGFloat = 60
+    static let actionReserve: CGFloat = 90
     static let screenHorizontalPadding: CGFloat = 20
-    static let screenTopPadding: CGFloat = 14
+    static let screenTopPadding: CGFloat = 16
+    static let screenSpacing: CGFloat = 16
+
+    static func scrollBottomPadding(hasAction: Bool = true) -> CGFloat {
+        footerReserve + (hasAction ? actionReserve : 22)
+    }
 }
 
 struct CampusCard: ViewModifier {
@@ -18,10 +24,10 @@ struct CampusCard: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(CampusTheme.elevated, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .background(CampusTheme.elevated, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .stroke(Color(.separator).opacity(0.22), lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(Color(.separator).opacity(0.18), lineWidth: 0.5)
             }
     }
 }
@@ -32,14 +38,14 @@ struct CampusScreenHeader: View {
     var symbol: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: symbol)
-                .font(.headline.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(CampusTheme.accent)
-                .frame(width: 40, height: 40)
+                .frame(width: 36, height: 36)
                 .background(CampusTheme.accent.opacity(0.12), in: Circle())
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.title2.weight(.semibold))
                     .lineLimit(1)
@@ -68,14 +74,14 @@ struct CampusBottomBar<Content: View>: View {
         if footerOffset > 0 {
             content
                 .frame(maxWidth: .infinity)
-                .padding(10)
+                .padding(8)
                 .frame(maxWidth: .infinity)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
                         .stroke(Color(.separator).opacity(0.32), lineWidth: 0.5)
                 }
-                .shadow(color: .black.opacity(0.10), radius: 16, x: 0, y: 6)
+                .shadow(color: .black.opacity(0.10), radius: 14, x: 0, y: 6)
                 .padding(.horizontal, 16)
                 .padding(.bottom, footerOffset)
         } else {
@@ -93,7 +99,7 @@ struct CampusPrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .frame(maxWidth: .infinity)
-            .frame(height: 54)
+            .frame(height: 52)
             .foregroundStyle(Color(.systemBackground))
             .background(Color.primary.opacity(configuration.isPressed ? 0.82 : 1), in: Capsule())
             .contentShape(Capsule())
@@ -105,7 +111,7 @@ struct CampusSecondaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .frame(maxWidth: .infinity)
-            .frame(height: 54)
+            .frame(height: 52)
             .foregroundStyle(.primary)
             .background(Color(.tertiarySystemGroupedBackground), in: Capsule())
             .overlay {
@@ -123,6 +129,14 @@ extension View {
 
     func campusLoadIn() -> some View {
         modifier(CampusLoadInModifier())
+    }
+
+    func campusFixedAction<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        overlay(alignment: .bottom) {
+            CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
+                content()
+            }
+        }
     }
 
     @ViewBuilder

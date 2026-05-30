@@ -25,20 +25,29 @@ private struct ReadyView: View {
     var body: some View {
         GeometryReader { proxy in
             ScrollView(showsIndicators: false) {
-                VStack(spacing: proxy.size.height < 760 ? 14 : 22) {
+                VStack(spacing: CampusTheme.screenSpacing) {
                     header
-                    startFocusButton(compact: proxy.size.height < 760)
+                    readyCard(compact: proxy.size.height < 760)
                     statusBlock
                     metricsRow
                 }
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: max(0, proxy.size.height - CampusTheme.footerReserve), alignment: .top)
+                .frame(minHeight: max(0, proxy.size.height - CampusTheme.scrollBottomPadding()), alignment: .top)
                 .padding(.horizontal, CampusTheme.screenHorizontalPadding)
                 .padding(.top, CampusTheme.screenTopPadding)
-                .padding(.bottom, CampusTheme.footerReserve + 24)
+                .padding(.bottom, CampusTheme.scrollBottomPadding())
             }
             .contentMargins(.top, 0, for: .scrollContent)
             .background(CampusTheme.background)
+        }
+        .campusFixedAction {
+            Button {
+                store.startFocus()
+            } label: {
+                Label(store.hasShieldSelection ? "Tap In" : "Choose Apps", systemImage: store.hasShieldSelection ? "lock.fill" : "square.grid.3x3.fill")
+            }
+            .buttonStyle(CampusPrimaryButtonStyle())
+            .accessibilityIdentifier("lock.startFocus")
         }
     }
 
@@ -70,49 +79,58 @@ private struct ReadyView: View {
         .campusCard(padding: 16)
     }
 
-    private func startFocusButton(compact: Bool) -> some View {
-        Button {
-            store.startFocus()
-        } label: {
+    private func readyCard(compact: Bool) -> some View {
+        VStack(spacing: compact ? 14 : 18) {
             ZStack {
-                ForEach([compact ? 166.0 : 190.0, compact ? 126.0 : 146.0, compact ? 92.0 : 104.0], id: \.self) { size in
+                ForEach([compact ? 138.0 : 154.0, compact ? 104.0 : 116.0, compact ? 72.0 : 80.0], id: \.self) { size in
                     Circle()
-                        .stroke(CampusTheme.accent.opacity(size < 110 ? 0.9 : 0.16), lineWidth: size < 110 ? 3 : 7)
+                        .stroke(CampusTheme.accent.opacity(size < 90 ? 0.95 : 0.14), lineWidth: size < 90 ? 3 : 7)
                         .frame(width: size, height: size)
                 }
-                Circle()
-                    .fill(.primary)
-                    .frame(width: compact ? 96 : 110, height: compact ? 96 : 110)
-                VStack(spacing: 1) {
-                    Text("Tap")
-                        .font(.title3.weight(.semibold))
-                    Text("in")
-                        .font(.caption.weight(.semibold))
-                }
-                .foregroundStyle(Color(.systemBackground))
+
+                Image(systemName: "location.north.circle.fill")
+                    .font(.system(size: compact ? 42 : 48, weight: .semibold))
+                    .foregroundStyle(CampusTheme.accent)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: compact ? 178 : 214)
+            .frame(height: compact ? 148 : 168)
+
+            VStack(spacing: 4) {
+                Text("Ready")
+                    .font(.largeTitle.weight(.semibold))
+                    .lineLimit(1)
+                Text("Tap in at the door to mark attendance and lock selected apps.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Start Focus")
-        .accessibilityIdentifier("lock.startFocus")
+        .frame(maxWidth: .infinity)
+        .campusCard(padding: compact ? 18 : 22)
     }
 
     private var statusBlock: some View {
-        VStack(spacing: 4) {
-            Text(store.hasShieldSelection ? "Focus + attendance" : "Choose apps first")
-                .font(.headline)
-            Text(store.hasShieldSelection ? "Tap once at the classroom door." : "Pick apps before the first lock.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            Image(systemName: store.hasShieldSelection ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(store.hasShieldSelection ? CampusTheme.success : CampusTheme.accent)
+                .frame(width: 36, height: 36)
+                .background((store.hasShieldSelection ? CampusTheme.success : CampusTheme.accent).opacity(0.12), in: Circle())
+            VStack(alignment: .leading, spacing: 3) {
+                Text(store.hasShieldSelection ? "Focus + attendance" : "Choose apps first")
+                    .font(.headline)
+                Text(store.hasShieldSelection ? "Tap once at the classroom door." : "Pick apps before the first lock.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 0)
         }
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity)
+        .campusCard(padding: 14)
     }
 
     private var metricsRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             MetricCard(value: "\(store.selectedShieldItemCount)", label: "selected")
             MetricCard(value: "\(store.state.selectedClass.durationMinutes)m", label: "class")
             MetricCard(value: "\(averagePassingMinutes)m", label: "avg pass")
@@ -159,19 +177,17 @@ private struct FocusActiveView: View {
                         .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(minHeight: max(0, proxy.size.height - CampusTheme.footerReserve), alignment: .center)
+                    .frame(minHeight: max(0, proxy.size.height - CampusTheme.scrollBottomPadding()), alignment: .center)
                     .padding(20)
                     .padding(.top, CampusTheme.screenTopPadding)
-                    .padding(.bottom, CampusTheme.footerReserve + 28)
+                    .padding(.bottom, CampusTheme.scrollBottomPadding())
                 }
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
-                        Button("Unlock") {
-                            store.manualUnlock()
-                        }
-                        .buttonStyle(CampusSecondaryButtonStyle())
-                        .accessibilityIdentifier("lock.unlock")
+                .campusFixedAction {
+                    Button("Unlock") {
+                        store.manualUnlock()
                     }
+                    .buttonStyle(CampusSecondaryButtonStyle())
+                    .accessibilityIdentifier("lock.unlock")
                 }
                 .background(Color.black)
             }
@@ -232,19 +248,17 @@ private struct UnlockedView: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: max(0, proxy.size.height - CampusTheme.footerReserve), alignment: .center)
+                .frame(minHeight: max(0, proxy.size.height - CampusTheme.scrollBottomPadding()), alignment: .center)
                 .padding(20)
                 .padding(.top, CampusTheme.screenTopPadding)
-                .padding(.bottom, CampusTheme.footerReserve + 28)
+                .padding(.bottom, CampusTheme.scrollBottomPadding())
             }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
-                    Button("Start Next Class") {
-                        store.startFocus()
-                    }
-                    .buttonStyle(CampusPrimaryButtonStyle())
-                    .accessibilityIdentifier("lock.startNextClass")
+            .campusFixedAction {
+                Button("Start Next Class") {
+                    store.startFocus()
                 }
+                .buttonStyle(CampusPrimaryButtonStyle())
+                .accessibilityIdentifier("lock.startNextClass")
             }
         }
     }

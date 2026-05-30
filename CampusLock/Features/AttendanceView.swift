@@ -7,7 +7,7 @@ struct AttendanceView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: CampusTheme.screenSpacing) {
                 CampusScreenHeader(
                     title: "Attendance",
                     subtitle: "Tap in at the door. Tap out when leaving.",
@@ -18,27 +18,25 @@ struct AttendanceView: View {
             }
             .padding(.horizontal, CampusTheme.screenHorizontalPadding)
             .padding(.top, CampusTheme.screenTopPadding)
-            .padding(.bottom, CampusTheme.footerReserve + 112)
+            .padding(.bottom, CampusTheme.scrollBottomPadding())
             .campusLoadIn()
         }
         .background(CampusTheme.background)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
-                HStack(spacing: 12) {
-                    Button("Enter") {
-                        attendanceActionCount += 1
-                        store.startFocus()
-                    }
-                    .buttonStyle(CampusPrimaryButtonStyle())
-                    .accessibilityIdentifier("attendance.enter")
-
-                    Button("Exit") {
-                        attendanceActionCount += 1
-                        store.manualUnlock()
-                    }
-                    .buttonStyle(CampusSecondaryButtonStyle())
-                    .accessibilityIdentifier("attendance.exit")
+        .campusFixedAction {
+            HStack(spacing: 10) {
+                Button("Enter") {
+                    attendanceActionCount += 1
+                    store.startFocus()
                 }
+                .buttonStyle(CampusPrimaryButtonStyle())
+                .accessibilityIdentifier("attendance.enter")
+
+                Button("Exit") {
+                    attendanceActionCount += 1
+                    store.manualUnlock()
+                }
+                .buttonStyle(CampusSecondaryButtonStyle())
+                .accessibilityIdentifier("attendance.exit")
             }
         }
         .sensoryFeedback(.selection, trigger: attendanceActionCount)
@@ -66,7 +64,7 @@ struct AttendanceView: View {
                     .foregroundStyle(store.state.isLocked ? CampusTheme.success : CampusTheme.accent)
                     .background((store.state.isLocked ? CampusTheme.success : CampusTheme.accent).opacity(0.12), in: Capsule())
             }
-            Spacer()
+            Spacer(minLength: 0)
         }
         .campusCard()
     }
@@ -92,7 +90,7 @@ struct AttendanceView: View {
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         }
-                        Spacer()
+                        Spacer(minLength: 0)
                         status(for: classSession)
                     }
                     .contentShape(Rectangle())

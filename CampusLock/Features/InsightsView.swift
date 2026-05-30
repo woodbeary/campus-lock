@@ -8,7 +8,7 @@ struct InsightsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: CampusTheme.screenSpacing) {
                 CampusScreenHeader(
                     title: "Stats",
                     subtitle: "Founder-ready attendance and focus signals.",
@@ -26,42 +26,40 @@ struct InsightsView: View {
             }
             .padding(.horizontal, CampusTheme.screenHorizontalPadding)
             .padding(.top, CampusTheme.screenTopPadding)
-            .padding(.bottom, CampusTheme.footerReserve + 96)
+            .padding(.bottom, CampusTheme.scrollBottomPadding())
             .campusLoadIn()
         }
         .background(CampusTheme.background)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
-                if let exportURL, !isPreparingExport {
-                    ShareLink(item: exportURL) {
-                        Text("Share CSV")
-                    }
-                    .buttonStyle(CampusPrimaryButtonStyle())
-                } else {
-                    Button {
-                        Task { @MainActor in
-                            isPreparingExport = true
-                            defer { isPreparingExport = false }
-                            do {
-                                exportURL = try store.exportAttendanceURL()
-                            } catch {
-                                exportError = error.localizedDescription
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 10) {
-                            if isPreparingExport {
-                                ProgressView()
-                                    .controlSize(.small)
-                                    .tint(Color(.systemBackground))
-                            }
-                            Text(isPreparingExport ? "Preparing" : "Prepare CSV")
-                        }
-                    }
-                    .buttonStyle(CampusPrimaryButtonStyle())
-                    .disabled(isPreparingExport)
-                    .accessibilityIdentifier("insights.prepareCSV")
+        .campusFixedAction {
+            if let exportURL, !isPreparingExport {
+                ShareLink(item: exportURL) {
+                    Text("Share CSV")
                 }
+                .buttonStyle(CampusPrimaryButtonStyle())
+            } else {
+                Button {
+                    Task { @MainActor in
+                        isPreparingExport = true
+                        defer { isPreparingExport = false }
+                        do {
+                            exportURL = try store.exportAttendanceURL()
+                        } catch {
+                            exportError = error.localizedDescription
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 10) {
+                        if isPreparingExport {
+                            ProgressView()
+                                .controlSize(.small)
+                                .tint(Color(.systemBackground))
+                        }
+                        Text(isPreparingExport ? "Preparing" : "Prepare CSV")
+                    }
+                }
+                .buttonStyle(CampusPrimaryButtonStyle())
+                .disabled(isPreparingExport)
+                .accessibilityIdentifier("insights.prepareCSV")
             }
         }
         .sensoryFeedback(.selection, trigger: isPreparingExport)

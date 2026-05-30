@@ -11,7 +11,7 @@ struct AppsView: View {
     var body: some View {
         @Bindable var store = store
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: CampusTheme.screenSpacing) {
                 CampusScreenHeader(
                     title: "Apps",
                     subtitle: "Choose what disappears during focus.",
@@ -22,14 +22,12 @@ struct AppsView: View {
             }
             .padding(.horizontal, CampusTheme.screenHorizontalPadding)
             .padding(.top, CampusTheme.screenTopPadding)
-            .padding(.bottom, CampusTheme.footerReserve + 96)
+            .padding(.bottom, CampusTheme.scrollBottomPadding())
             .campusLoadIn()
         }
         .background(CampusTheme.background)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
-                nativePickerButton
-            }
+        .campusFixedAction {
+            nativePickerButton
         }
         .sensoryFeedback(.selection, trigger: store.isShowingAppPicker)
         #if canImport(FamilyControls)
@@ -41,11 +39,13 @@ struct AppsView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("\(store.selectedShieldItemCount)")
                 .font(.largeTitle.weight(.semibold))
+                .monospacedDigit()
             Text("selected")
                 .foregroundStyle(.secondary)
             Text("Use Apple's picker so the lock applies to real apps, categories, and websites.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .campusCard()
@@ -73,6 +73,7 @@ struct AppsView: View {
                 Text("Phone · Messages · Maps")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             Spacer()
         }

@@ -24,13 +24,13 @@ private struct MainTabView: View {
             ZStack(alignment: .bottom) {
                 currentTab
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .animation(.snappy(duration: 0.22), value: store.selectedTab)
+                    .animation(.snappy(duration: 0.18), value: store.selectedTab)
                     .background(CampusTheme.background.ignoresSafeArea())
                     .zIndex(0)
 
                 CampusFooterNav(selectedTab: $store.selectedTab)
                     .padding(.horizontal, 16)
-                    .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12))
+                    .padding(.bottom, max(proxy.safeAreaInsets.bottom, 10))
                     .zIndex(10)
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
@@ -59,7 +59,7 @@ private struct CampusFooterNav: View {
     private let tabs: [AppTab] = [.lock, .apps, .zone, .stats, .attendance]
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 2) {
             ForEach(tabs, id: \.self) { tab in
                 Button {
                     withAnimation(.snappy(duration: 0.22)) {
@@ -68,19 +68,19 @@ private struct CampusFooterNav: View {
                 } label: {
                     VStack(spacing: 3) {
                         Image(systemName: tab.symbol)
-                            .font(.system(size: 16, weight: .semibold))
-                            .frame(height: 19)
+                            .font(.system(size: 15, weight: .semibold))
+                            .frame(height: 18)
 
                         Text(tab.title)
                             .font(.caption2.weight(.semibold))
                             .lineLimit(1)
-                            .minimumScaleFactor(0.72)
+                            .minimumScaleFactor(0.78)
                     }
                     .foregroundStyle(selectedTab == tab ? CampusTheme.accent : .secondary)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(selectedTab == tab ? CampusTheme.accent.opacity(0.13) : Color.clear, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .frame(height: 48)
+                    .background(selectedTab == tab ? CampusTheme.accent.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("tab.\(tab.title.lowercased())")
@@ -90,12 +90,12 @@ private struct CampusFooterNav: View {
         .frame(maxWidth: .infinity)
         .frame(maxWidth: 390)
         .frame(height: CampusTheme.footerHeight)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 32, style: .continuous))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .stroke(Color(.separator).opacity(0.35), lineWidth: 0.5)
         }
-        .shadow(color: .black.opacity(0.12), radius: 18, x: 0, y: 8)
+        .shadow(color: .black.opacity(0.10), radius: 16, x: 0, y: 8)
         .sensoryFeedback(.selection, trigger: selectedTab)
     }
 }
