@@ -6,15 +6,12 @@ enum CampusTheme {
     static let elevated = Color(.secondarySystemGroupedBackground)
     static let accent = Color.blue
     static let success = Color.green
-    static let footerReserve: CGFloat = 104
-    static let footerHeight: CGFloat = 60
-    static let actionReserve: CGFloat = 90
     static let screenHorizontalPadding: CGFloat = 20
-    static let screenTopPadding: CGFloat = 16
-    static let screenSpacing: CGFloat = 16
+    static let screenTopPadding: CGFloat = 14
+    static let screenSpacing: CGFloat = 14
 
     static func scrollBottomPadding(hasAction: Bool = true) -> CGFloat {
-        footerReserve + (hasAction ? actionReserve : 22)
+        hasAction ? 18 : 24
     }
 }
 
@@ -63,34 +60,18 @@ struct CampusScreenHeader: View {
 
 struct CampusBottomBar<Content: View>: View {
     private let content: Content
-    private let footerOffset: CGFloat
 
-    init(footerOffset: CGFloat = 0, @ViewBuilder content: () -> Content) {
-        self.footerOffset = footerOffset
+    init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
 
     var body: some View {
-        if footerOffset > 0 {
-            content
-                .frame(maxWidth: .infinity)
-                .padding(8)
-                .frame(maxWidth: .infinity)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(Color(.separator).opacity(0.32), lineWidth: 0.5)
-                }
-                .shadow(color: .black.opacity(0.10), radius: 14, x: 0, y: 6)
-                .padding(.horizontal, 16)
-                .padding(.bottom, footerOffset)
-        } else {
-            content
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
-                .padding(.bottom, 16)
-                .background(.regularMaterial)
-        }
+        content
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+            .padding(.top, 10)
+            .padding(.bottom, 8)
+            .background(.regularMaterial)
     }
 }
 
@@ -132,8 +113,8 @@ extension View {
     }
 
     func campusFixedAction<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
-        overlay(alignment: .bottom) {
-            CampusBottomBar(footerOffset: CampusTheme.footerReserve) {
+        safeAreaInset(edge: .bottom, spacing: 0) {
+            CampusBottomBar {
                 content()
             }
         }

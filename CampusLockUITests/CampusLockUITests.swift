@@ -11,7 +11,7 @@ final class CampusLockUITests: XCTestCase {
         app.launchArguments = ["--ui-testing"]
         app.launch()
 
-        XCTAssertTrue(app.buttons["tab.lock"].waitForExistence(timeout: 5))
+        XCTAssertTrue(tabButton("Lock", app: app).waitForExistence(timeout: 5))
         assertFooterTabsStayReachable(app)
         XCTAssertTrue(app.buttons["lock.startFocus"].waitForExistence(timeout: 5))
         assertActionSitsAboveFooter("lock.startFocus", app: app)
@@ -38,7 +38,7 @@ final class CampusLockUITests: XCTestCase {
     }
 
     private func assertTabAction(_ tabLabel: String, actionIdentifier: String, app: XCUIApplication) {
-        let tab = app.buttons["tab.\(tabLabel.lowercased())"]
+        let tab = tabButton(tabLabel, app: app)
         XCTAssertTrue(tab.waitForExistence(timeout: 5), "\(tabLabel) tab should exist")
         tab.tap()
 
@@ -49,21 +49,25 @@ final class CampusLockUITests: XCTestCase {
     }
 
     private func assertFooterTabsStayReachable(_ app: XCUIApplication) {
-        for tabIdentifier in ["tab.lock", "tab.apps", "tab.zone", "tab.stats", "tab.attend"] {
-            let tab = app.buttons[tabIdentifier]
-            XCTAssertTrue(tab.waitForExistence(timeout: 5), "\(tabIdentifier) should exist")
-            XCTAssertTrue(tab.isHittable, "\(tabIdentifier) should be hittable")
-            XCTAssertGreaterThan(tab.frame.midY, app.frame.midY, "\(tabIdentifier) should stay in the fixed footer area")
+        for tabLabel in ["Lock", "Apps", "Zone", "Stats", "Attend"] {
+            let tab = tabButton(tabLabel, app: app)
+            XCTAssertTrue(tab.waitForExistence(timeout: 5), "\(tabLabel) tab should exist")
+            XCTAssertTrue(tab.isHittable, "\(tabLabel) tab should be hittable")
+            XCTAssertGreaterThan(tab.frame.midY, app.frame.midY, "\(tabLabel) should stay in the native footer area")
         }
     }
 
     private func assertActionSitsAboveFooter(_ actionIdentifier: String, app: XCUIApplication) {
         let action = app.buttons[actionIdentifier]
-        let footer = app.buttons["tab.lock"]
+        let footer = tabButton("Lock", app: app)
         XCTAssertTrue(action.waitForExistence(timeout: 5), "\(actionIdentifier) should exist")
         XCTAssertTrue(footer.waitForExistence(timeout: 5), "footer should exist")
         XCTAssertTrue(action.isHittable, "\(actionIdentifier) should be hittable")
         XCTAssertGreaterThan(action.frame.minY, app.frame.midY, "\(actionIdentifier) should stay in the predictable bottom action area")
         XCTAssertLessThan(action.frame.maxY, footer.frame.minY, "\(actionIdentifier) should not overlap the footer")
+    }
+
+    private func tabButton(_ label: String, app: XCUIApplication) -> XCUIElement {
+        app.tabBars.buttons[label]
     }
 }

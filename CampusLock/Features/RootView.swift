@@ -4,13 +4,7 @@ struct RootView: View {
     @Environment(CampusLockStore.self) private var store
 
     var body: some View {
-        Group {
-            if store.state.isSetupComplete {
-                MainTabView()
-            } else {
-                SetupView()
-            }
-        }
+        MainTabView()
         .tint(CampusTheme.accent)
     }
 }
@@ -20,83 +14,39 @@ private struct MainTabView: View {
 
     var body: some View {
         @Bindable var store = store
-        GeometryReader { proxy in
-            ZStack(alignment: .bottom) {
-                currentTab
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .animation(.snappy(duration: 0.18), value: store.selectedTab)
-                    .background(CampusTheme.background.ignoresSafeArea())
-                    .zIndex(0)
+        TabView(selection: $store.selectedTab) {
+            lockTab
+                .tabItem { Label(AppTab.lock.title, systemImage: AppTab.lock.symbol) }
+                .tag(AppTab.lock)
 
-                CampusFooterNav(selectedTab: $store.selectedTab)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, max(proxy.safeAreaInsets.bottom, 10))
-                    .zIndex(10)
-            }
-            .ignoresSafeArea(.keyboard, edges: .bottom)
+            AppsView()
+                .tabItem { Label(AppTab.apps.title, systemImage: AppTab.apps.symbol) }
+                .tag(AppTab.apps)
+
+            ZoneView()
+                .tabItem { Label(AppTab.zone.title, systemImage: AppTab.zone.symbol) }
+                .tag(AppTab.zone)
+
+            InsightsView()
+                .tabItem { Label(AppTab.stats.title, systemImage: AppTab.stats.symbol) }
+                .tag(AppTab.stats)
+
+            AttendanceView()
+                .tabItem { Label(AppTab.attendance.title, systemImage: AppTab.attendance.symbol) }
+                .tag(AppTab.attendance)
         }
+        .background(CampusTheme.background.ignoresSafeArea())
+        .animation(.snappy(duration: 0.18), value: store.selectedTab)
+        .sensoryFeedback(.selection, trigger: store.selectedTab)
     }
 
     @ViewBuilder
-    private var currentTab: some View {
-        switch store.selectedTab {
-        case .lock:
+    private var lockTab: some View {
+        if store.state.isSetupComplete {
             LockView()
-        case .apps:
-            AppsView()
-        case .zone:
-            ZoneView()
-        case .stats:
-            InsightsView()
-        case .attendance:
-            AttendanceView()
+        } else {
+            SetupView()
         }
-    }
-}
-
-private struct CampusFooterNav: View {
-    @Binding var selectedTab: AppTab
-    private let tabs: [AppTab] = [.lock, .apps, .zone, .stats, .attendance]
-
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(tabs, id: \.self) { tab in
-                Button {
-                    withAnimation(.snappy(duration: 0.22)) {
-                        selectedTab = tab
-                    }
-                } label: {
-                    VStack(spacing: 3) {
-                        Image(systemName: tab.symbol)
-                            .font(.system(size: 15, weight: .semibold))
-                            .frame(height: 18)
-
-                        Text(tab.title)
-                            .font(.caption2.weight(.semibold))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.78)
-                    }
-                    .foregroundStyle(selectedTab == tab ? CampusTheme.accent : .secondary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(selectedTab == tab ? CampusTheme.accent.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-                    .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("tab.\(tab.title.lowercased())")
-            }
-        }
-        .padding(6)
-        .frame(maxWidth: .infinity)
-        .frame(maxWidth: 390)
-        .frame(height: CampusTheme.footerHeight)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .stroke(Color(.separator).opacity(0.35), lineWidth: 0.5)
-        }
-        .shadow(color: .black.opacity(0.10), radius: 16, x: 0, y: 8)
-        .sensoryFeedback(.selection, trigger: selectedTab)
     }
 }
 

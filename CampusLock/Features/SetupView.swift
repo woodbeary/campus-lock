@@ -13,15 +13,15 @@ struct SetupView: View {
                     permissionRows
                     mvpRule
                 }
-                .frame(maxWidth: .infinity, minHeight: max(0, proxy.size.height - 112), alignment: .topLeading)
+                .frame(maxWidth: .infinity, minHeight: max(0, proxy.size.height - 130), alignment: .topLeading)
                 .padding(.horizontal, CampusTheme.screenHorizontalPadding)
-                .padding(.top, CampusTheme.screenTopPadding + 8)
-                .padding(.bottom, 120)
+                .padding(.top, CampusTheme.screenTopPadding)
+                .padding(.bottom, CampusTheme.scrollBottomPadding())
                 .campusLoadIn()
             }
             .defaultScrollAnchor(.top)
             .contentMargins(.top, 0, for: .scrollContent)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
+            .campusFixedAction {
                 bottomAction
             }
         }
@@ -68,27 +68,25 @@ struct SetupView: View {
     }
 
     private var bottomAction: some View {
-        CampusBottomBar {
-            Button {
-                Task {
-                    isWorking = true
-                    await store.completeSetup()
-                    isWorking = false
-                }
-            } label: {
-                HStack(spacing: 10) {
-                    if isWorking {
-                        ProgressView()
-                            .controlSize(.small)
-                            .tint(Color(.systemBackground))
-                    }
-                    Text(isWorking ? "Setting Up" : "Continue")
-                }
+        Button {
+            Task {
+                isWorking = true
+                await store.completeSetup()
+                isWorking = false
             }
-            .buttonStyle(CampusPrimaryButtonStyle())
-            .disabled(isWorking)
-            .accessibilityIdentifier("setup.continue")
+        } label: {
+            HStack(spacing: 10) {
+                if isWorking {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(Color(.systemBackground))
+                }
+                Text(isWorking ? "Setting Up" : "Continue")
+            }
         }
+        .buttonStyle(CampusPrimaryButtonStyle())
+        .disabled(isWorking)
+        .accessibilityIdentifier("setup.continue")
     }
 }
 
