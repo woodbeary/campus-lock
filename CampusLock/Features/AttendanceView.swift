@@ -258,7 +258,7 @@ private struct NFCEntrySheet: View {
             Spacer(minLength: 8)
 
             VStack(spacing: 20) {
-                NFCGlyph(isScanning: store.nfcScanState.isScanning)
+                NFCGlyph(isScanning: scanAnimationIsActive)
                 VStack(spacing: 6) {
                     Text(store.state.selectedClass.title)
                         .font(.title2.weight(.semibold))
@@ -303,7 +303,7 @@ private struct NFCEntrySheet: View {
             manualFallbackIsVisible = false
             store.startNFCEntryScan()
             try? await Task.sleep(for: fallbackDelay)
-            guard !Task.isCancelled, store.nfcScanState.isScanning else { return }
+            guard !Task.isCancelled, !store.state.isLocked, store.nfcScanState != .detected else { return }
             withAnimation(.easeInOut(duration: 0.2)) {
                 hasWaitedForTag = true
                 manualFallbackIsVisible = true
@@ -311,12 +311,7 @@ private struct NFCEntrySheet: View {
         }
         .onChange(of: store.nfcScanState) { _, state in
             switch state {
-            case .unavailable, .failed:
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    hasWaitedForTag = true
-                    manualFallbackIsVisible = true
-                }
-            case .scanning:
+            case .scanning, .unavailable, .failed:
                 break
             default:
                 hasWaitedForTag = false
@@ -326,11 +321,17 @@ private struct NFCEntrySheet: View {
     }
 
     private var statusText: String? {
-        if hasWaitedForTag && store.nfcScanState.isScanning {
-            "Still searching…"
+        guard hasWaitedForTag else { return nil }
+
+        if store.nfcScanState.isScanning {
+            return "Still searching…"
         } else {
-            store.nfcScanState.fallbackText
+            return store.nfcScanState.fallbackText
         }
+    }
+
+    private var scanAnimationIsActive: Bool {
+        store.nfcScanState.isScanning || !hasWaitedForTag
     }
 
     private var fallbackDelay: Duration {
