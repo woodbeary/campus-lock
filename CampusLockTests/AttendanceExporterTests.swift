@@ -2,8 +2,6 @@ import CampusLockCore
 import Foundation
 import Testing
 
-@testable import CampusLock
-
 @Suite("Attendance export")
 struct AttendanceExporterTests {
     @Test("CSV includes stable header and escaped rows")

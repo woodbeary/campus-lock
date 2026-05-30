@@ -22,6 +22,7 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 ```
 
 This runs Swift package tests, regenerates the Xcode project, typechecks against the installed iPhoneOS SDK, and performs an unsigned iPhoneOS build of the app plus shield extensions.
+It also compiles the iOS unit-test bundle and UI-test runner against the iPhoneOS SDK even when no simulator/device destination is eligible.
 
 ## Generate project
 
@@ -34,6 +35,12 @@ open CampusLock.xcodeproj
 
 ```sh
 ./scripts/archive-adhoc.sh
+```
+
+To check release prerequisites without starting an archive:
+
+```sh
+./scripts/release-preflight.sh
 ```
 
 The script expects the local Mac/Xcode account to be release-ready:

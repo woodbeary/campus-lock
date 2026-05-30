@@ -25,6 +25,32 @@ xcodebuild \
   ENABLE_ON_DEMAND_RESOURCES=NO \
   build
 
+echo "== iPhoneOS unit test bundle build =="
+xcodebuild \
+  -project CampusLock.xcodeproj \
+  -target CampusLockTests \
+  -configuration Debug \
+  -sdk "$iphoneos_sdk" \
+  -arch arm64 \
+  CODE_SIGNING_ALLOWED=NO \
+  ENABLE_ON_DEMAND_RESOURCES=NO \
+  ENABLE_TESTABILITY=YES \
+  SWIFT_OPTIMIZATION_LEVEL=-Onone \
+  build
+
+echo "== iPhoneOS UI test bundle build =="
+xcodebuild \
+  -project CampusLock.xcodeproj \
+  -target CampusLockUITests \
+  -configuration Debug \
+  -sdk "$iphoneos_sdk" \
+  -arch arm64 \
+  CODE_SIGNING_ALLOWED=NO \
+  ENABLE_ON_DEMAND_RESOURCES=NO \
+  ENABLE_TESTABILITY=YES \
+  SWIFT_OPTIMIZATION_LEVEL=-Onone \
+  build
+
 if xcodebuild -project CampusLock.xcodeproj -scheme CampusLock -showdestinations 2>/dev/null \
   | awk '/Available destinations/{available=1; next} /Ineligible destinations/{available=0} available && /platform:iOS/{found=1} END{exit found ? 0 : 1}'; then
   echo "== iOS Debug build =="

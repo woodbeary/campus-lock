@@ -23,12 +23,12 @@
 		601D6041314E651841010AEB /* AppIcon60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = BAD0D52A3D54F8E3CA49A686 /* AppIcon60x60@2x.png */; };
 		6E95DD756C1FE5F8AD6F3E10 /* CampusLockCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		716272A99F005E8B034BBCCF /* CampusLockShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AE1EC4505AB3EA4DB3DEAD5A /* CampusLockShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		78475B972AE6934110E9EFB0 /* AttendanceExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530A14F640959E4344627CB4 /* AttendanceExporter.swift */; };
 		82FC53C0E7BD1FBBF1E142D2 /* LockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26C1019BC3C017DBDCD4713B /* LockView.swift */; };
 		9E67B7D5C9E4FC0524DB6151 /* CampusLockReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CED9649C8FF37353C14F24F /* CampusLockReducer.swift */; };
 		B31EB91455A8C1A942C52E75 /* CampusLockAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C72D4C4356280F6C1B77F8 /* CampusLockAnalytics.swift */; };
 		B43E490EA1F28A35AE61846F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18EFBA3B0362A9272ED28307 /* RootView.swift */; };
 		BCD2E78CB656E334418304CF /* CampusLockModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390CECC6740FCA8AEBA48449 /* CampusLockModels.swift */; };
-		BEC11AA6FE6E476479140A69 /* AttendanceExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ABCB671E50A505E13DD6684 /* AttendanceExporter.swift */; };
 		C649043656F9C9CEC52BA365 /* ShieldConfigurationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9634DD49CC219C120026CEA /* ShieldConfigurationExtension.swift */; };
 		C7B63F44E146A6BEA922742F /* AttendanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6191207A9A5505CD07477BE5 /* AttendanceView.swift */; };
 		C821BDE5ABCB9711E15A468B /* CampusLockShieldConfiguration.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2CF644034175F8863137D1E2 /* CampusLockShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -138,10 +138,10 @@
 		390CECC6740FCA8AEBA48449 /* CampusLockModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockModels.swift; sourceTree = "<group>"; };
 		3CED9649C8FF37353C14F24F /* CampusLockReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockReducer.swift; sourceTree = "<group>"; };
 		3E7B464C6DB3E5E220B13498 /* AppIcon60x60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon60x60@3x.png"; sourceTree = "<group>"; };
-		4ABCB671E50A505E13DD6684 /* AttendanceExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceExporter.swift; sourceTree = "<group>"; };
 		4B9DCCF066C4D1C542ED466A /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
 		4D44FF7D785D00438923CD32 /* CampusLock.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CampusLock.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F6B1B067250704DEA92A15F /* CampusLockTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CampusLockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		530A14F640959E4344627CB4 /* AttendanceExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceExporter.swift; sourceTree = "<group>"; };
 		581EC40A20068431E930450B /* CampusLock.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CampusLock.entitlements; sourceTree = "<group>"; };
 		6191207A9A5505CD07477BE5 /* AttendanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceView.swift; sourceTree = "<group>"; };
 		714E7E0CDEC37CC2B7C063B9 /* ZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneView.swift; sourceTree = "<group>"; };
@@ -185,6 +185,7 @@
 		0E532186ACEE08F63FD74E88 /* CampusLockCore */ = {
 			isa = PBXGroup;
 			children = (
+				530A14F640959E4344627CB4 /* AttendanceExporter.swift */,
 				E5C72D4C4356280F6C1B77F8 /* CampusLockAnalytics.swift */,
 				390CECC6740FCA8AEBA48449 /* CampusLockModels.swift */,
 				3CED9649C8FF37353C14F24F /* CampusLockReducer.swift */,
@@ -247,7 +248,6 @@
 		A8714FB8CE08DA88308712DB /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				4ABCB671E50A505E13DD6684 /* AttendanceExporter.swift */,
 				0E3BA9BCFE68092B9C1CD4F7 /* CampusLockRepository.swift */,
 				267E60CC9CDFFEC0DD5320F0 /* LocationController.swift */,
 				D6B190C7D433828D64863CBD /* ScreenTimeController.swift */,
@@ -526,7 +526,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4F549B5DD6EBBBF1A61FBE9E /* AppsView.swift in Sources */,
-				BEC11AA6FE6E476479140A69 /* AttendanceExporter.swift in Sources */,
 				C7B63F44E146A6BEA922742F /* AttendanceView.swift in Sources */,
 				103473D29C6A6E3F68F8D782 /* CampusLockApp.swift in Sources */,
 				E3E78B532361DDF4FB7EB17B /* CampusLockRepository.swift in Sources */,
@@ -562,6 +561,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78475B972AE6934110E9EFB0 /* AttendanceExporter.swift in Sources */,
 				B31EB91455A8C1A942C52E75 /* CampusLockAnalytics.swift in Sources */,
 				BCD2E78CB656E334418304CF /* CampusLockModels.swift in Sources */,
 				9E67B7D5C9E4FC0524DB6151 /* CampusLockReducer.swift in Sources */,

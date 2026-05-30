@@ -1,14 +1,13 @@
-import CampusLockCore
 import Foundation
 
-enum AttendanceExporter {
-    static func exportURL(records: [AttendanceRecord], fileManager: FileManager = .default) throws -> URL {
+public enum AttendanceExporter {
+    public static func exportURL(records: [AttendanceRecord], fileManager: FileManager = .default) throws -> URL {
         let fileURL = fileManager.temporaryDirectory.appending(path: "campus-lock-attendance.csv")
         try csv(records: records).write(to: fileURL, atomically: true, encoding: .utf8)
         return fileURL
     }
 
-    static func csv(records: [AttendanceRecord]) -> String {
+    public static func csv(records: [AttendanceRecord]) -> String {
         var rows = ["period,class,room,checked_in,checked_out,state"]
         rows += records.map { record in
             [
