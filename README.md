@@ -126,6 +126,12 @@ open CampusLock.xcodeproj
 ./scripts/archive-adhoc.sh
 ```
 
+If Xcode cannot run a normal archive destination but Team Admin ad hoc profiles are already installed, this fallback wraps the built iPhone app in an archive and runs export directly:
+
+```sh
+./scripts/archive-adhoc-from-built-app.sh
+```
+
 For a registered-device build that works without Simulator and without archive export:
 
 ```sh
@@ -176,4 +182,4 @@ Current external blockers on this Mac:
 - The current App Store Connect credential passes read-only bundle/cert/device checks but cannot create provisioning profiles; `./scripts/create-adhoc-profiles.sh` needs Team Admin credentials.
 - Installed release-testing/ad hoc profiles for the app and both shield extensions do not include the Family Controls Distribution entitlement.
 
-The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists, `./scripts/install-development-build.sh` installs it successfully, and the installed app launch/visual smoke test passes on the unlocked phone.
+The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh` or `./scripts/archive-adhoc-from-built-app.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists, `./scripts/install-development-build.sh` installs it successfully, and the installed app launch/visual smoke test passes on the unlocked phone.
