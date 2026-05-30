@@ -49,6 +49,14 @@ To verify the latest packaged registered-device IPA:
 
 This checks the app plus both shield extension embedded profiles, Family Controls entitlements, registered device inclusion, code signatures, and SHA-256 hash.
 
+To create the three ad hoc profiles after Team Admin credentials are available:
+
+```sh
+CONFIRM_CREATE_ADHOC_PROFILES=1 ./scripts/create-adhoc-profiles.sh
+```
+
+This command is guarded because it mutates Apple Developer state.
+
 To smoke-test the latest installed registered-device build:
 
 ```sh
