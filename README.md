@@ -136,6 +136,14 @@ To check release prerequisites without starting an archive:
 ./scripts/release-preflight.sh
 ```
 
+If disk is the only immediate blocker, inspect guarded cleanup options without deleting anything:
+
+```sh
+./scripts/release-space-cleanup.sh
+```
+
+Applying cleanup requires explicit flags such as `CLEAN_COLIMA=1 CONFIRM_RELEASE_CLEANUP=1 ./scripts/release-space-cleanup.sh`.
+
 The script expects the local Mac/Xcode account to be release-ready:
 
 - Xcode is signed in to Apple Developer team `YOUR_TEAM_ID`.
