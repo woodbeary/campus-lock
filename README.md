@@ -65,13 +65,13 @@ For an exported ad hoc IPA, require distribution-style signing explicitly:
 IPA_PATH="$(cat build/export/latest-adhoc-ipa.path)" EXPECTED_SIGNING=ad-hoc ./scripts/verify-ipa-artifact.sh
 ```
 
-To create the three ad hoc profiles after Team Admin credentials are available:
+To create, download, install, and wire the three ad hoc profiles after Team Admin credentials are available:
 
 ```sh
 CONFIRM_CREATE_ADHOC_PROFILES=1 ./scripts/create-adhoc-profiles.sh
 ```
 
-This command is guarded because it mutates Apple Developer state.
+This command is guarded because it mutates Apple Developer state. It installs the created profiles locally and regenerates export options unless `INSTALL_CREATED_PROFILES=0` or `GENERATE_EXPORT_OPTIONS=0` is set.
 
 To safely audit whether matching remote ad hoc profiles already exist without
 printing provisioning profile contents:
