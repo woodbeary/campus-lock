@@ -1,4 +1,3 @@
-import CampusLockCore
 import SwiftUI
 
 #if canImport(FamilyControls)
@@ -7,141 +6,100 @@ import FamilyControls
 
 struct AppsView: View {
     @Environment(CampusLockStore.self) private var store
+    @State private var sheet: SettingsSheet?
 
     var body: some View {
         @Bindable var store = store
         CampusScreen {
-            CampusScreenHeader(
-                title: "Apps",
-                subtitle: "Choose what disappears during focus.",
-                symbol: "square.grid.3x3"
-            )
-            selectedSummary
-            recommendedPresetCard
-            permissionCard
-            nativePickerCard
-            allowedSummary
+            VStack(spacing: 10) {
+                SettingsRow(
+                    title: "Apps",
+                    value: store.hasShieldSelection ? "\(store.selectedShieldItemCount) selected" : "Default",
+                    symbol: "slider.horizontal.3"
+                ) {
+                    Task {
+                        await store.openAppPicker()
+                    }
+                }
+                .accessibilityIdentifier("apps.chooseSpecific")
+
+                SettingsRow(
+                    title: "Zone",
+                    value: "\(Int(store.state.zone.radiusMeters)) m",
+                    symbol: "location.circle"
+                ) {
+                    sheet = .zone
+                }
+                .accessibilityIdentifier("settings.zone")
+
+                SettingsRow(
+                    title: "Stats",
+                    value: "\(Int(store.metrics.attendanceRate * 100))%",
+                    symbol: "chart.bar.xaxis"
+                ) {
+                    sheet = .stats
+                }
+                .accessibilityIdentifier("settings.stats")
+            }
         }
-        .campusFixedAction {
-            nativePickerButton
-        }
-        .sensoryFeedback(.selection, trigger: store.isShowingAppPicker)
+        .sensoryFeedback(.selection, trigger: sheet)
         #if canImport(FamilyControls)
         .familyActivityPicker(isPresented: $store.isShowingAppPicker, selection: $store.activitySelection)
         #endif
+        .sheet(item: $sheet) { sheet in
+            switch sheet {
+            case .zone:
+                ZoneView(mode: .settings)
+                    .presentationDetents([.large])
+            case .stats:
+                InsightsView()
+                    .presentationDetents([.medium, .large])
+            }
+        }
     }
+}
 
-    private var selectedSummary: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(CampusTheme.accent.opacity(0.12))
-                Image(systemName: "app.badge.fill")
-                    .font(.title3.weight(.semibold))
+private enum SettingsSheet: String, Identifiable {
+    case zone
+    case stats
+
+    var id: String { rawValue }
+}
+
+private struct SettingsRow: View {
+    var title: String
+    var value: String
+    var symbol: String
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: symbol)
+                    .font(.headline.weight(.semibold))
                     .foregroundStyle(CampusTheme.accent)
-            }
-            .frame(width: 52, height: 52)
+                    .frame(width: 42, height: 42)
+                    .background(CampusTheme.accent.opacity(0.12), in: Circle())
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(store.hasShieldSelection ? "\(store.selectedShieldItemCount)" : "Preset")
-                    .font(.largeTitle.weight(.semibold))
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
-                Text(store.hasShieldSelection ? "selected" : "recommended")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .campusCard()
-    }
-
-    private var nativePickerCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Apple App Picker")
-                .font(.headline)
-            Text("Opens Apple’s private Screen Time picker with real apps, categories, and websites from this iPhone.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .campusCard()
-    }
-
-    private var permissionCard: some View {
-        HStack(spacing: 14) {
-            Image(systemName: store.screenTimeReady ? "checkmark.shield.fill" : "lock.shield")
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(store.screenTimeReady ? CampusTheme.success : CampusTheme.accent)
-                .frame(width: 40, height: 40)
-                .background((store.screenTimeReady ? CampusTheme.success : CampusTheme.accent).opacity(0.12), in: Circle())
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Screen Time Permission")
+                Text(title)
                     .font(.headline)
-                Text(store.screenTimeReady ? "Ready for focus controls" : "Required before Apple can show apps")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
-            Spacer(minLength: 0)
-        }
-        .campusCard(padding: 14)
-    }
+                    .foregroundStyle(.primary)
 
-    private var recommendedPresetCard: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "sparkles.rectangle.stack")
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(CampusTheme.accent)
-                .frame(width: 40, height: 40)
-                .background(CampusTheme.accent.opacity(0.12), in: Circle())
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Recommended Focus")
-                    .font(.headline)
-                Text("Default shields every app and website category Apple allows Campus Lock to control.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-            Image(systemName: store.hasShieldSelection ? "circle" : "checkmark")
-                .font(.headline)
-                .foregroundStyle(store.hasShieldSelection ? .secondary : CampusTheme.success)
-        }
-        .campusCard(padding: 14)
-    }
+                Spacer(minLength: 0)
 
-    private var nativePickerButton: some View {
-        Button {
-            Task {
-                await store.openAppPicker()
-            }
-        } label: {
-            Label(store.screenTimeReady ? "Customize Apps" : "Allow Screen Time", systemImage: store.screenTimeReady ? "slider.horizontal.3" : "lock.shield")
-        }
-        .buttonStyle(CampusPrimaryButtonStyle())
-        .accessibilityIdentifier("apps.chooseSpecific")
-    }
-
-    private var allowedSummary: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "checkmark.shield")
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(CampusTheme.success)
-                .frame(width: 40, height: 40)
-                .background(CampusTheme.success.opacity(0.12), in: Circle())
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Emergency safe")
-                    .font(.headline)
-                Text("Phone calls stay available by iOS. Customize exceptions anytime.")
-                    .font(.caption)
+                Text(value)
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1)
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
             }
-            Spacer()
+            .padding(16)
+            .contentShape(Rectangle())
         }
-        .campusCard(padding: 14)
+        .buttonStyle(.plain)
+        .campusCard(padding: 0)
     }
 }

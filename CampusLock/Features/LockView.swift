@@ -33,7 +33,7 @@ private struct ReadyView: View {
             } label: {
                 Label("Tap In", systemImage: "lock.fill")
             }
-            .buttonStyle(CampusPrimaryButtonStyle())
+            .campusPrimaryAction()
             .accessibilityIdentifier("lock.startFocus")
         }
     }
@@ -220,10 +220,10 @@ private struct FocusActiveView: View {
                 .frame(width: 38, height: 38)
                 .background(.white.opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 4) {
-                Text("Emergency safe")
+                Text("Available")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text("Phone calls stay available")
+                Text("Phone calls")
                     .font(.headline)
                     .foregroundStyle(.white)
             }
@@ -271,7 +271,7 @@ private struct UnlockedView: View {
             } label: {
                 Label("Start Next Class", systemImage: "arrow.clockwise")
             }
-            .buttonStyle(CampusPrimaryButtonStyle())
+            .campusPrimaryAction()
             .accessibilityIdentifier("lock.startNextClass")
         }
     }

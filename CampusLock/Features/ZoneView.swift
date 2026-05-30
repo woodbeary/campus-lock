@@ -3,7 +3,14 @@ import MapKit
 import SwiftUI
 
 struct ZoneView: View {
+    enum Mode {
+        case onboarding
+        case settings
+    }
+
+    var mode: Mode = .settings
     @Environment(CampusLockStore.self) private var store
+    @Environment(\.dismiss) private var dismiss
     @State private var didEnableZone = false
 
     var body: some View {
@@ -11,7 +18,7 @@ struct ZoneView: View {
         CampusScreen {
             CampusScreenHeader(
                 title: "Zone",
-                subtitle: "Draw the classroom radius around your current location.",
+                subtitle: mode == .onboarding ? "Set the class radius." : "Current class radius.",
                 symbol: "location"
             )
             if let currentLocation = store.state.currentLocation {
@@ -45,19 +52,25 @@ struct ZoneView: View {
                 if store.state.currentLocation == nil || !store.locationStatus.isUsable {
                     await store.requestLocationRefresh()
                 } else {
-                    didEnableZone.toggle()
-                    store.startFocus()
-                    store.selectedTab = .lock
+                    let didFinish = store.finishZoneSetup(selectHome: mode == .onboarding)
+                    if didFinish {
+                        didEnableZone.toggle()
+                        if mode == .settings {
+                            dismiss()
+                        }
+                    }
                 }
             }
         } label: {
             if store.state.currentLocation == nil || !store.locationStatus.isUsable {
                 Label(store.isLocating ? "Locating" : "Use Current Location", systemImage: store.isLocating ? "location.magnifyingglass" : "location.fill")
+            } else if mode == .onboarding {
+                Label("Use This Zone", systemImage: "arrow.right")
             } else {
-                Label("Enable Zone", systemImage: "location.fill")
+                Label("Save Zone", systemImage: "checkmark")
             }
         }
-        .buttonStyle(CampusPrimaryButtonStyle())
+        .campusPrimaryAction()
         .disabled(store.isLocating)
         .accessibilityIdentifier("zone.enable")
     }

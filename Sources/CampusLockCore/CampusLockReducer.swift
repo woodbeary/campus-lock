@@ -5,6 +5,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
     public var policy: AppPolicy
     public var zone: CampusZone
     public var activeSession: FocusSession?
+    public var activeHallPass: HallPass?
     public var attendanceRecords: [AttendanceRecord]
     public var selectedClass: ClassSession
     public var currentLocation: Coordinate?
@@ -18,6 +19,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
             label: "Campus"
         ),
         activeSession: FocusSession? = nil,
+        activeHallPass: HallPass? = nil,
         attendanceRecords: [AttendanceRecord] = [],
         selectedClass: ClassSession = ClassSession.sampleSchedule(referenceDate: Date())[2],
         currentLocation: Coordinate? = nil
@@ -26,6 +28,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
         self.policy = policy
         self.zone = zone
         self.activeSession = activeSession
+        self.activeHallPass = activeHallPass
         self.attendanceRecords = attendanceRecords
         self.selectedClass = selectedClass
         self.currentLocation = currentLocation
@@ -51,6 +54,8 @@ public enum CampusLockEvent: Equatable, Sendable {
     case manualUnlock(Date)
     case leaveZone(Coordinate, Date)
     case selectClass(ClassSession)
+    case startHallPass(Date, TimeInterval)
+    case endHallPass(Date)
 }
 
 public struct CampusLockReducer: Sendable {
@@ -75,6 +80,7 @@ public struct CampusLockReducer: Sendable {
             guard state.isSetupComplete else { return }
             let session = FocusSession(classSession: state.selectedClass, zone: state.zone, startedAt: date)
             state.activeSession = session
+            state.activeHallPass = nil
             state.attendanceRecords.append(
                 AttendanceRecord(session: state.selectedClass, checkedInAt: date, state: .present)
             )
@@ -92,12 +98,20 @@ public struct CampusLockReducer: Sendable {
         case let .selectClass(classSession):
             guard state.activeSession == nil else { return }
             state.selectedClass = classSession
+
+        case let .startHallPass(date, duration):
+            guard state.activeSession != nil else { return }
+            state.activeHallPass = HallPass(startedAt: date, durationSeconds: duration)
+
+        case .endHallPass:
+            state.activeHallPass = nil
         }
     }
 
     private func checkout(state: inout CampusLockState, at date: Date, state attendanceState: AttendanceState) {
         guard state.activeSession != nil else { return }
         state.activeSession = nil
+        state.activeHallPass = nil
         guard var latestRecord = state.attendanceRecords.last else { return }
         latestRecord.checkedOutAt = date
         latestRecord.state = attendanceState
@@ -109,16 +123,17 @@ public extension ClassSession {
     static func sampleSchedule(referenceDate: Date) -> [ClassSession] {
         let calendar = Calendar(identifier: .gregorian)
         let startOfDay = calendar.startOfDay(for: referenceDate)
-        let rows: [(Int, String, String, Int, Int)] = [
-            (1, "English", "Room 118", 8, 10),
-            (2, "History", "Room 222", 9, 5),
-            (3, "Biology", "Room 204", 10, 0),
-            (4, "Algebra", "Room 310", 11, 5),
-            (5, "Studio", "Room 12", 13, 10),
-            (6, "Practice", "Gym", 14, 15)
+        let rows: [(String, Int, String, String, Int, Int)] = [
+            ("11111111-1111-4111-8111-111111111111", 1, "English", "Room 118", 8, 10),
+            ("22222222-2222-4222-8222-222222222222", 2, "History", "Room 222", 9, 5),
+            ("33333333-3333-4333-8333-333333333333", 3, "Biology", "Room 204", 10, 0),
+            ("44444444-4444-4444-8444-444444444444", 4, "Algebra", "Room 310", 11, 5),
+            ("55555555-5555-4555-8555-555555555555", 5, "Studio", "Room 12", 13, 10),
+            ("66666666-6666-4666-8666-666666666666", 6, "Practice", "Gym", 14, 15)
         ]
-        return rows.map { period, title, room, hour, minute in
+        return rows.map { id, period, title, room, hour, minute in
             ClassSession(
+                id: UUID(uuidString: id) ?? UUID(),
                 period: period,
                 title: title,
                 room: room,

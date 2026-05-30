@@ -5,7 +5,8 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 ## What is implemented
 
 - Setup gate for Screen Time and Location permissions.
-- Onboarding-first flow with no main footer until required permissions are approved.
+- Onboarding-first flow; Home appears only after required permissions and zone setup.
+- One-screen Home with a glass settings gear instead of a bottom Settings tab.
 - Recommended focus preset that shields every app and website category Apple allows without forcing manual app selection.
 - Apple `FamilyControls` picker for user-selected apps/categories.
 - Local persistence for the selected Screen Time tokens.
@@ -25,7 +26,7 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 
 This runs Swift package tests, checks JavaScript/TypeScript gates when a `package.json`, `jest.config.*`, or `tsconfig.json` exists, lints release scripts/plists/manifests, regenerates the Xcode project, typechecks against the installed iPhoneOS SDK, and performs an unsigned iPhoneOS build of the app plus shield extensions.
 It also compiles the iOS unit-test bundle and UI-test runner against the iPhoneOS SDK even when no simulator/device destination is eligible.
-It includes a UI layout guard for the fixed SwiftUI footer menu, bottom action dock, shared screen shell, and no `GeometryReader` crowding regressions.
+It includes a UI layout guard for the one-screen Home, glass settings gear, bottom action dock, shared screen shell, and no `GeometryReader` crowding regressions.
 It fails before heavy builds if free disk is below `MINIMUM_VERIFY_FREE_GB`, which defaults to `1`.
 Swift package coverage is enforced at 80% minimum line coverage for the core domain target.
 

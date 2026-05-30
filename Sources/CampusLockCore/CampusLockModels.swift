@@ -141,6 +141,33 @@ public struct AttendanceRecord: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
+public struct HallPass: Codable, Equatable, Identifiable, Sendable {
+    public var id: UUID
+    public var startedAt: Date
+    public var endsAt: Date
+    public var reason: String
+
+    public init(
+        id: UUID = UUID(),
+        startedAt: Date,
+        durationSeconds: TimeInterval = 300,
+        reason: String = "Restroom"
+    ) {
+        self.id = id
+        self.startedAt = startedAt
+        self.endsAt = startedAt.addingTimeInterval(durationSeconds)
+        self.reason = reason
+    }
+
+    public func isActive(at date: Date) -> Bool {
+        date < endsAt
+    }
+
+    public func remainingSeconds(at date: Date) -> TimeInterval {
+        max(0, endsAt.timeIntervalSince(date))
+    }
+}
+
 public enum FocusLockState: Equatable, Sendable {
     case setupRequired
     case ready

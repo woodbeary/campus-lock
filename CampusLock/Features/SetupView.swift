@@ -1,101 +1,155 @@
-import CampusLockCore
 import SwiftUI
 
 struct SetupView: View {
     @Environment(CampusLockStore.self) private var store
 
     var body: some View {
-        CampusScreen {
-            header
-            permissionRows
+        VStack(spacing: 0) {
+            Spacer(minLength: 28)
+            CampusGlassGroup(spacing: 22) {
+                VStack(spacing: 22) {
+                    header
+                    currentPermissionCard
+                }
+            }
+            .frame(maxWidth: CampusTheme.contentMaxWidth)
+            .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+            Spacer(minLength: 96)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(CampusTheme.background.ignoresSafeArea())
         .campusFixedAction {
             bottomAction
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(CampusTheme.background.ignoresSafeArea())
-        .animation(.snappy(duration: 0.18), value: store.isRequestingPermissions)
-        .sensoryFeedback(.selection, trigger: store.isRequestingPermissions)
+        .animation(.snappy(duration: 0.22), value: store.screenTimeReady)
+        .animation(.snappy(duration: 0.22), value: store.locationStatus)
+        .animation(.snappy(duration: 0.22), value: store.isLocating)
+        .sensoryFeedback(.success, trigger: store.canContinuePermissionOnboarding)
     }
 
     private var header: some View {
-        CampusScreenHeader(
-            title: "Campus Lock",
-            subtitle: "Set up once. Tap in at class. Walk out to unlock.",
-            symbol: "lock.shield"
-        )
-    }
+        VStack(spacing: 16) {
+            Image(systemName: "lock.shield")
+                .font(.system(size: 42, weight: .semibold))
+                .foregroundStyle(CampusTheme.accent)
+                .frame(width: 96, height: 96)
+                .background(CampusTheme.accent.opacity(0.12), in: Circle())
+                .campusGlass(cornerRadius: 48, interactive: true)
 
-    private var permissionRows: some View {
-        VStack(spacing: 0) {
-            SetupRow(title: "Screen Time", subtitle: store.screenTimeStatusLabel, symbol: "lock", isReady: store.screenTimeReady)
-            CampusDivider()
-            SetupRow(title: "Focus Preset", subtitle: appsSubtitle, symbol: "sparkles.rectangle.stack", isReady: store.screenTimeReady)
-            CampusDivider()
-            SetupRow(title: "Location", subtitle: store.locationStatus.label, symbol: "location", isReady: store.locationStatus.isUsable)
+            VStack(spacing: 8) {
+                Text("Campus Lock")
+                    .font(.system(size: 38, weight: .semibold, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.82)
+            }
         }
-        .campusCard(padding: 0)
+        .frame(maxWidth: .infinity)
+        .accessibilityIdentifier("setup.hero")
     }
 
-    private var appsSubtitle: String {
-        store.focusSetupSubtitle
+    @ViewBuilder
+    private var currentPermissionCard: some View {
+        if !store.screenTimeReady {
+            PermissionStepCard(
+                symbol: "lock.app.dashed",
+                title: "Screen Time",
+                status: setupStatus(store.authorizationStatus, ready: store.screenTimeReady),
+                actionTitle: "Allow"
+            ) {
+                Task { await store.requestScreenTimeAuthorization() }
+            }
+            .accessibilityIdentifier("setup.screenTime")
+        } else if !store.locationStatus.isUsable {
+            PermissionStepCard(
+                symbol: "location.circle",
+                title: "Location",
+                status: setupStatus(store.locationStatus, ready: store.locationStatus.isUsable),
+                actionTitle: store.isLocating ? "Waiting" : "Allow"
+            ) {
+                Task { await store.requestLocationRefresh() }
+            }
+            .accessibilityIdentifier("setup.location")
+        } else {
+            PermissionStepCard(
+                symbol: "checkmark.circle",
+                title: "Ready",
+                status: "Ready",
+                actionTitle: nil
+            )
+            .accessibilityIdentifier("setup.ready")
+        }
     }
 
     private var bottomAction: some View {
         Button {
-            Task {
-                await store.completeSetup()
-            }
+            store.confirmPermissionOnboarding()
         } label: {
-            HStack(spacing: 10) {
-                if store.isRequestingPermissions {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(Color(.systemBackground))
-                }
-                Label(store.isRequestingPermissions ? "Requesting" : "Allow & Continue", systemImage: store.isRequestingPermissions ? "hourglass" : "arrow.right")
-                    .labelStyle(.titleAndIcon)
-            }
+            Label("Continue", systemImage: "arrow.right")
         }
-        .buttonStyle(CampusPrimaryButtonStyle())
-        .disabled(store.isRequestingPermissions)
+        .campusPrimaryAction()
+        .disabled(!store.canContinuePermissionOnboarding)
+        .opacity(store.canContinuePermissionOnboarding ? 1 : 0.36)
         .accessibilityIdentifier("setup.continue")
     }
-}
 
-private struct SetupRow: View {
-    var title: String
-    var subtitle: String
-    var symbol: String
-    var isReady: Bool
-
-    var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: symbol)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(CampusTheme.accent)
-                .frame(width: 34, height: 34)
-                .background(CampusTheme.accent.opacity(0.12), in: Circle())
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            Image(systemName: isReady ? "checkmark" : "circle")
-                .font(.headline)
-                .foregroundStyle(isReady ? CampusTheme.success : .secondary)
+    private func setupStatus(_ status: PermissionStatus, ready: Bool) -> String {
+        if ready { return "Ready" }
+        switch status {
+        case .notDetermined:
+            return "Required"
+        case let .denied(message):
+            return message.isEmpty ? "Denied" : message
+        case .approved:
+            return "Ready"
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 9)
     }
 }
 
-private struct CampusDivider: View {
+private struct PermissionStepCard: View {
+    var symbol: String
+    var title: String
+    var status: String
+    var actionTitle: String?
+    var action: (() -> Void)?
+
     var body: some View {
-        Divider()
-            .padding(.leading, 62)
+        VStack(spacing: 18) {
+            HStack(spacing: 14) {
+                Image(systemName: symbol)
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(CampusTheme.accent)
+                    .frame(width: 54, height: 54)
+                    .background(CampusTheme.accent.opacity(0.12), in: Circle())
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.title3.weight(.semibold))
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            HStack(spacing: 10) {
+                Label(status, systemImage: status == "Ready" ? "checkmark.circle.fill" : "circle")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(status == "Ready" ? CampusTheme.success : .secondary)
+
+                Spacer(minLength: 0)
+
+                if let actionTitle, let action {
+                    Button(action: action) {
+                        Text(actionTitle)
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 9)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .disabled(actionTitle == "Waiting")
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .campusCard()
     }
 }

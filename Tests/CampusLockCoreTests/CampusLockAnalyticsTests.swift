@@ -35,4 +35,23 @@ struct CampusLockAnalyticsTests {
         #expect(metrics.lockedSeconds == 94 * 60)
         #expect(metrics.longPassingPeriods == 1)
     }
+
+    @Test("attendance rate is capped at one hundred percent")
+    func attendanceRateCapsAtOneHundredPercent() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let schedule = ClassSession.sampleSchedule(referenceDate: now)
+        let records = schedule.map { session in
+            AttendanceRecord(session: session, checkedInAt: now, state: .manualUnlock)
+        } + [
+            AttendanceRecord(session: schedule[0], checkedInAt: now.addingTimeInterval(60), state: .manualUnlock)
+        ]
+
+        let metrics = CampusLockAnalytics.dashboardMetrics(
+            attendanceRecords: records,
+            scheduledClassCount: schedule.count,
+            passingDurations: []
+        )
+
+        #expect(metrics.attendanceRate == 1)
+    }
 }

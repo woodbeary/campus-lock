@@ -12,19 +12,18 @@ final class CampusLockStore {
     var state: CampusLockState
     var authorizationStatus: PermissionStatus = .notDetermined
     var locationStatus: PermissionStatus = .notDetermined
-    var selectedTab: AppTab = .lock
+    var selectedTab: AppTab = .attendance
     var isShowingAppPicker = false
     var isRequestingPermissions = false
     var isLocating = false
+    var isStartingFocus = false
+    var hasConfirmedPermissionOnboarding = false
 
     #if canImport(FamilyControls)
     var activitySelection = FamilyActivitySelection() {
         didSet {
             guard !isUITesting else { return }
             repository.saveActivitySelection(activitySelection)
-            if hasShieldSelection {
-                authorizationStatus = .approved
-            }
         }
     }
     #endif
@@ -34,6 +33,9 @@ final class CampusLockStore {
     @ObservationIgnored private let locationController = LocationController()
     @ObservationIgnored private let repository = CampusLockRepository()
     @ObservationIgnored private let isUITesting: Bool
+    @ObservationIgnored private let requiresSetupInUITests: Bool
+    @ObservationIgnored private var pendingFocusStart = false
+    @ObservationIgnored private var focusStartTask: Task<Void, Never>?
 
     init(
         state: CampusLockState = CampusLockState(),
@@ -41,22 +43,31 @@ final class CampusLockStore {
     ) {
         let arguments = ProcessInfo.processInfo.arguments
         self.isUITesting = isUITesting
-        self.state = isUITesting ? state : repository.load() ?? state
+        requiresSetupInUITests = isUITesting && arguments.contains("--ui-testing-setup-required")
+        self.state = Self.canonicalizeClassSelection(isUITesting ? state : repository.load() ?? state)
         #if canImport(FamilyControls)
         if !isUITesting {
             activitySelection = repository.loadActivitySelection() ?? FamilyActivitySelection()
         }
         #endif
+        if !isUITesting {
+            authorizationStatus = screenTimeController.currentAuthorizationStatus()
+            locationStatus = locationController.currentAuthorizationStatus()
+        }
         locationController.onLocationUpdate = { [weak self] coordinate in
             self?.handleLocationUpdate(coordinate)
         }
         locationController.onLocationFailure = { [weak self] in
             self?.isLocating = false
+            self?.isStartingFocus = false
+            self?.pendingFocusStart = false
+            self?.focusStartTask?.cancel()
         }
         locationController.onAuthorizationChange = { [weak self] status in
             self?.handleLocationAuthorizationChange(status)
         }
-        if isUITesting && !arguments.contains("--ui-testing-setup-required") {
+        if isUITesting && !requiresSetupInUITests {
+            apply(.updateLocation(Coordinate(latitude: 33.6405, longitude: -117.8443)))
             apply(.completeSetup)
         }
     }
@@ -92,7 +103,7 @@ final class CampusLockStore {
     }
 
     var screenTimeReady: Bool {
-        authorizationStatus.isUsable || hasShieldSelection
+        authorizationStatus.isUsable
     }
 
     var screenTimeStatusLabel: String {
@@ -112,17 +123,35 @@ final class CampusLockStore {
     }
 
     var shouldShowSetup: Bool {
-        !state.isSetupComplete || !screenTimeReady || !locationStatus.isUsable
+        shouldShowPermissionSetup || shouldShowZoneOnboarding
+    }
+
+    var shouldShowPermissionSetup: Bool {
+        !screenTimeReady || !locationStatus.isUsable || (!state.isSetupComplete && !hasConfirmedPermissionOnboarding)
+    }
+
+    var shouldShowZoneOnboarding: Bool {
+        screenTimeReady && locationStatus.isUsable && !state.isSetupComplete && hasConfirmedPermissionOnboarding
+    }
+
+    var canContinuePermissionOnboarding: Bool {
+        screenTimeReady && locationStatus.isUsable
     }
 
     var canStartFocus: Bool {
-        state.isSetupComplete && screenTimeReady && locationStatus.isUsable
+        state.isSetupComplete && screenTimeReady && locationStatus.isUsable && state.currentLocation != nil
     }
 
     func refreshRuntimeStatus() async {
         guard !isUITesting else {
+            if requiresSetupInUITests {
+                return
+            }
             authorizationStatus = .approved
             locationStatus = .approved
+            if state.currentLocation == nil {
+                apply(.updateLocation(Coordinate(latitude: 33.6405, longitude: -117.8443)))
+            }
             return
         }
         authorizationStatus = screenTimeController.currentAuthorizationStatus()
@@ -137,26 +166,37 @@ final class CampusLockStore {
         if isUITesting {
             authorizationStatus = .approved
             locationStatus = .approved
-            apply(.completeSetup)
+            hasConfirmedPermissionOnboarding = true
+            if state.currentLocation == nil {
+                apply(.updateLocation(Coordinate(latitude: 33.6405, longitude: -117.8443)))
+            }
             return
         }
         isRequestingPermissions = true
         defer { isRequestingPermissions = false }
         await requestScreenTimeAuthorization()
         await requestLocationRefresh()
-        if screenTimeReady && locationStatus.isUsable {
-            apply(.completeSetup)
-            selectedTab = .zone
+    }
+
+    func confirmPermissionOnboarding() {
+        guard canContinuePermissionOnboarding else { return }
+        hasConfirmedPermissionOnboarding = true
+    }
+
+    @discardableResult
+    func finishZoneSetup(selectHome: Bool = true) -> Bool {
+        guard screenTimeReady && locationStatus.isUsable && state.currentLocation != nil else { return false }
+        apply(.completeSetup)
+        locationController.monitor(zone: state.zone)
+        if selectHome {
+            selectedTab = .attendance
         }
+        return true
     }
 
     @discardableResult
     func requestScreenTimeAuthorization() async -> Bool {
         if isUITesting {
-            authorizationStatus = .approved
-            return true
-        }
-        if hasShieldSelection {
             authorizationStatus = .approved
             return true
         }
@@ -171,6 +211,9 @@ final class CampusLockStore {
     func requestLocationRefresh() async -> Bool {
         if isUITesting {
             locationStatus = .approved
+            if state.currentLocation == nil {
+                apply(.updateLocation(Coordinate(latitude: 33.6405, longitude: -117.8443)))
+            }
             return true
         }
         isLocating = true
@@ -208,17 +251,85 @@ final class CampusLockStore {
 
     func startFocus() {
         guard screenTimeReady && locationStatus.isUsable else {
-            selectedTab = .lock
+            selectedTab = .attendance
             return
         }
-        guard canStartFocus else { return }
+        guard state.isSetupComplete else { return }
+        if isUITesting {
+            if state.currentLocation == nil {
+                apply(.updateLocation(Coordinate(latitude: 33.6405, longitude: -117.8443)))
+            }
+            beginFocus()
+            return
+        }
+        if state.currentLocation != nil {
+            beginFocus()
+            return
+        }
+
+        isStartingFocus = true
+        pendingFocusStart = true
+        locationController.startUpdating()
+        locationController.requestCurrentLocation()
+        focusStartTask?.cancel()
+        focusStartTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                guard let self, self.pendingFocusStart else { return }
+                if self.state.currentLocation != nil {
+                    self.beginFocus()
+                } else {
+                    self.isStartingFocus = false
+                    self.pendingFocusStart = false
+                }
+            }
+        }
+    }
+
+    private func beginFocus() {
+        guard canStartFocus else {
+            isStartingFocus = false
+            pendingFocusStart = false
+            focusStartTask?.cancel()
+            return
+        }
+        let wasLocked = state.isLocked
         apply(.startFocus(Date()))
         applyShield()
         locationController.monitor(zone: state.zone)
+        isStartingFocus = false
+        pendingFocusStart = false
+        focusStartTask?.cancel()
+        if !wasLocked && state.isLocked {
+            CampusFeedback.locked()
+        }
     }
 
     func manualUnlock() {
+        let wasLocked = state.isLocked
         apply(.manualUnlock(Date()))
+        applyShield()
+        if wasLocked && !state.isLocked {
+            CampusFeedback.unlocked()
+        }
+    }
+
+    func startHallPass() {
+        guard state.isLocked else { return }
+        apply(.startHallPass(Date(), 300))
+        applyShield()
+    }
+
+    func endHallPass() {
+        guard state.activeHallPass != nil else { return }
+        apply(.endHallPass(Date()))
+        applyShield()
+    }
+
+    func expireHallPassIfNeeded(at date: Date) {
+        guard let hallPass = state.activeHallPass, !hallPass.isActive(at: date) else { return }
+        apply(.endHallPass(date))
         applyShield()
     }
 
@@ -228,11 +339,20 @@ final class CampusLockStore {
 
     func handleLocationUpdate(_ coordinate: Coordinate) {
         isLocating = false
-        if state.activeSession == nil {
+        if pendingFocusStart {
+            pendingFocusStart = false
+            focusStartTask?.cancel()
+            apply(.updateLocation(coordinate))
+            beginFocus()
+        } else if state.activeSession == nil {
             apply(.updateLocation(coordinate))
         } else {
+            let wasLocked = state.isLocked
             apply(.leaveZone(coordinate, Date()))
             applyShield()
+            if wasLocked && !state.isLocked {
+                CampusFeedback.unlocked()
+            }
         }
     }
 
@@ -241,10 +361,6 @@ final class CampusLockStore {
         guard status.isUsable else { return }
         locationController.startUpdating()
         locationController.requestCurrentLocation()
-        if screenTimeReady && !state.isSetupComplete {
-            apply(.completeSetup)
-            selectedTab = .zone
-        }
     }
 
     private func apply(_ event: CampusLockEvent) {
@@ -253,11 +369,27 @@ final class CampusLockStore {
     }
 
     private func applyShield() {
+        let hallPassIsActive = state.activeHallPass?.isActive(at: Date()) == true
+        let shouldShield = state.isLocked && !hallPassIsActive
         #if canImport(FamilyControls)
-        screenTimeController.applyShield(isLocked: state.isLocked, selection: activitySelection)
+        screenTimeController.applyShield(isLocked: shouldShield, selection: activitySelection)
         #else
-        screenTimeController.applyShield(isLocked: state.isLocked)
+        screenTimeController.applyShield(isLocked: shouldShield)
         #endif
+    }
+
+    private static func canonicalizeClassSelection(_ state: CampusLockState) -> CampusLockState {
+        var state = state
+        if state.isSetupComplete && state.currentLocation == nil {
+            state.isSetupComplete = false
+        }
+        guard state.activeSession == nil else { return state }
+        if let canonicalClass = ClassSession.sampleSchedule(referenceDate: Date()).first(where: { classSession in
+            classSession.period == state.selectedClass.period
+        }) {
+            state.selectedClass = canonicalClass
+        }
+        return state
     }
 }
 
@@ -286,4 +418,6 @@ enum AppTab: Hashable, CaseIterable {
     case zone
     case stats
     case attendance
+
+    static let primaryTabs: [AppTab] = [.attendance, .apps]
 }

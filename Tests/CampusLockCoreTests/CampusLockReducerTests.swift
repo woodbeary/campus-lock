@@ -77,6 +77,25 @@ struct CampusLockReducerTests {
         #expect(record.checkedOutAt == start.addingTimeInterval(180))
     }
 
+    @Test("hall pass pauses during an active class only")
+    func hallPassRequiresActiveClass() throws {
+        var state = CampusLockState(isSetupComplete: true)
+
+        reducer.reduce(&state, event: .startHallPass(start, 300))
+        #expect(state.activeHallPass == nil)
+
+        reducer.reduce(&state, event: .startFocus(start))
+        reducer.reduce(&state, event: .startHallPass(start.addingTimeInterval(60), 300))
+
+        let hallPass = try #require(state.activeHallPass)
+        #expect(hallPass.reason == "Restroom")
+        #expect(hallPass.endsAt == start.addingTimeInterval(360))
+
+        reducer.reduce(&state, event: .endHallPass(start.addingTimeInterval(120)))
+        #expect(state.activeHallPass == nil)
+        #expect(state.activeSession != nil)
+    }
+
     @Test("safety critical categories cannot be blocked", arguments: [AppCategory.phone, .messages, .maps])
     func safetyCriticalCategoriesStayAllowed(category: AppCategory) {
         var policy = AppPolicy()

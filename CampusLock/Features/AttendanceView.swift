@@ -1,118 +1,289 @@
 import CampusLockCore
+import Combine
 import SwiftUI
 
 struct AttendanceView: View {
     @Environment(CampusLockStore.self) private var store
-    @State private var attendanceActionCount = 0
+    @State private var confirmation: AttendanceConfirmation?
+    @State private var feedbackCount = 0
+    @State private var now = Date()
+    @State private var settingsIsPresented = false
+
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         CampusScreen {
-            CampusScreenHeader(
-                title: "Attendance",
-                subtitle: "Tap in at the door. Tap out when leaving.",
-                symbol: "lanyardcard"
-            )
-            activeClassCard
+            header
+            if let hallPass = store.state.activeHallPass, hallPass.isActive(at: now) {
+                HallPassPill(remaining: hallPass.remainingSeconds(at: now))
+            }
             scheduleList
         }
         .campusFixedAction {
+            bottomAction
+        }
+        .onReceive(timer) { date in
+            now = date
+            store.expireHallPassIfNeeded(at: date)
+        }
+        .sensoryFeedback(.selection, trigger: feedbackCount)
+        .alert(confirmationTitle, isPresented: confirmationBinding) {
+            confirmationButtons
+        }
+        .sheet(isPresented: $settingsIsPresented) {
+            AppsView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    private var header: some View {
+        HStack(alignment: .center) {
+            Text("Alex")
+                .font(.largeTitle.weight(.semibold))
+                .lineLimit(1)
+
+            Spacer(minLength: 0)
+
+            Button {
+                settingsIsPresented = true
+            } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(CampusTheme.accent)
+                    .frame(width: 48, height: 48)
+                    .campusGlass(cornerRadius: 24, interactive: true)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Settings")
+            .accessibilityIdentifier("home.settings")
+        }
+        .accessibilityIdentifier("home.header")
+    }
+
+    @ViewBuilder
+    private var bottomAction: some View {
+        if store.state.isLocked {
             HStack(spacing: 10) {
                 Button {
-                    attendanceActionCount += 1
-                    store.startFocus()
+                    confirmation = store.state.activeHallPass?.isActive(at: now) == true ? .endPass : .hallPass
                 } label: {
-                    Label("Enter", systemImage: "arrow.down.circle.fill")
+                    if let hallPass = store.state.activeHallPass, hallPass.isActive(at: now) {
+                        Label(passTime(hallPass.remainingSeconds(at: now)), systemImage: "figure.walk")
+                    } else {
+                        Label("Pass", systemImage: "figure.walk")
+                    }
                 }
-                .buttonStyle(CampusPrimaryButtonStyle())
-                .accessibilityIdentifier("attendance.enter")
+                .campusSecondaryAction()
+                .accessibilityIdentifier("attendance.hallPass")
 
                 Button {
-                    attendanceActionCount += 1
-                    store.manualUnlock()
+                    confirmation = .exit
                 } label: {
                     Label("Exit", systemImage: "arrow.up.circle.fill")
                 }
-                .buttonStyle(CampusSecondaryButtonStyle())
+                .campusPrimaryAction()
                 .accessibilityIdentifier("attendance.exit")
             }
-        }
-        .sensoryFeedback(.selection, trigger: attendanceActionCount)
-    }
-
-    private var activeClassCard: some View {
-        HStack(spacing: 16) {
-            Image(systemName: "lanyardcard")
-                .font(.title3)
-                .foregroundStyle(CampusTheme.accent)
-                .frame(width: 48, height: 48)
-                .background(CampusTheme.accent.opacity(0.12), in: Circle())
-            VStack(alignment: .leading, spacing: 5) {
-                Text(store.state.selectedClass.title)
-                    .font(.title2.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
-                Text("Period \(store.state.selectedClass.period) · \(store.state.selectedClass.room)")
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                Text(store.state.isLocked ? "Present" : "Ready")
-                    .font(.caption.weight(.medium))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .foregroundStyle(store.state.isLocked ? CampusTheme.success : CampusTheme.accent)
-                    .background((store.state.isLocked ? CampusTheme.success : CampusTheme.accent).opacity(0.12), in: Capsule())
+        } else if store.isStartingFocus {
+            Button {} label: {
+                Label("Locating", systemImage: "location.fill")
             }
-            Spacer(minLength: 0)
+            .campusPrimaryAction()
+            .disabled(true)
+            .accessibilityIdentifier("attendance.locating")
+        } else {
+            Button {
+                confirmation = .enter
+            } label: {
+                Label("Enter \(store.state.selectedClass.title)", systemImage: "arrow.down.circle.fill")
+            }
+            .campusPrimaryAction()
+            .accessibilityIdentifier("attendance.enter")
         }
-        .campusCard()
     }
 
     private var scheduleList: some View {
         VStack(spacing: 10) {
             ForEach(store.schedule) { classSession in
+                let isSelected = store.state.selectedClass.id == classSession.id
+                let hallPassIsActive = isSelected && store.state.activeHallPass?.isActive(at: now) == true
                 Button {
                     store.selectClass(classSession)
                 } label: {
-                    HStack(spacing: 14) {
-                        Text("\(classSession.period)")
-                            .font(.caption.weight(.semibold))
-                            .frame(width: 30, height: 30)
-                            .background(Color(.tertiarySystemGroupedBackground), in: Circle())
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(classSession.title)
-                                .font(.headline)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.82)
-                            Text(classSession.startsAt.formatted(date: .omitted, time: .shortened))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
-                        Spacer(minLength: 0)
-                        status(for: classSession)
-                    }
-                    .contentShape(Rectangle())
+                    ClassRow(
+                        classSession: classSession,
+                        isSelected: isSelected,
+                        record: store.state.attendanceRecords.last { $0.session.id == classSession.id },
+                        isLive: isSelected && store.state.isLocked,
+                        isHallPassActive: hallPassIsActive
+                    )
                 }
                 .buttonStyle(.plain)
-                .campusCard(padding: 13)
+                .disabled(store.state.isLocked)
             }
         }
     }
 
-    private func status(for classSession: ClassSession) -> some View {
-        let record = store.state.attendanceRecords.last { $0.session.id == classSession.id }
-        let label = if store.state.selectedClass.id == classSession.id && store.state.isLocked {
-            "Live"
-        } else if record != nil {
-            "Done"
-        } else {
-            "Next"
+    private var confirmationBinding: Binding<Bool> {
+        Binding(
+            get: { confirmation != nil },
+            set: { isPresented in
+                if !isPresented {
+                    confirmation = nil
+                }
+            }
+        )
+    }
+
+    private var confirmationTitle: String {
+        switch confirmation {
+        case .enter:
+            "Enter \(store.state.selectedClass.title)?"
+        case .exit:
+            "Exit \(store.state.selectedClass.title)?"
+        case .hallPass:
+            "Restroom Pass?"
+        case .endPass:
+            "End Pass?"
+        case nil:
+            ""
         }
-        let color = label == "Live" ? CampusTheme.accent : label == "Done" ? CampusTheme.success : Color.secondary
-        return Text(label)
-            .font(.caption.weight(.medium))
+    }
+
+    @ViewBuilder
+    private var confirmationButtons: some View {
+        Button("Cancel", role: .cancel) {
+            confirmation = nil
+        }
+
+        switch confirmation {
+        case .enter:
+            Button("Enter") {
+                feedbackCount += 1
+                confirmation = nil
+                store.startFocus()
+            }
+        case .exit:
+            Button("Exit", role: .destructive) {
+                feedbackCount += 1
+                store.manualUnlock()
+                confirmation = nil
+            }
+        case .hallPass:
+            Button("Start") {
+                feedbackCount += 1
+                store.startHallPass()
+                confirmation = nil
+            }
+        case .endPass:
+            Button("End") {
+                feedbackCount += 1
+                store.endHallPass()
+                confirmation = nil
+            }
+        case nil:
+            EmptyView()
+        }
+    }
+
+    private func passTime(_ seconds: TimeInterval) -> String {
+        let totalSeconds = max(0, Int(seconds.rounded(.up)))
+        return "\(totalSeconds / 60):\(String(format: "%02d", totalSeconds % 60))"
+    }
+}
+
+private enum AttendanceConfirmation {
+    case enter
+    case exit
+    case hallPass
+    case endPass
+}
+
+private struct HallPassPill: View {
+    var remaining: TimeInterval
+
+    var body: some View {
+        Label("Restroom \(passTime)", systemImage: "figure.walk")
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(CampusTheme.accent)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .campusGlass(cornerRadius: 18, interactive: true)
+            .accessibilityIdentifier("attendance.hallPass.status")
+    }
+
+    private var passTime: String {
+        let totalSeconds = max(0, Int(remaining.rounded(.up)))
+        return "\(totalSeconds / 60):\(String(format: "%02d", totalSeconds % 60))"
+    }
+}
+
+private struct ClassRow: View {
+    var classSession: ClassSession
+    var isSelected: Bool
+    var record: AttendanceRecord?
+    var isLive: Bool
+    var isHallPassActive: Bool
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Text("\(classSession.period)")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(isSelected ? Color(.systemBackground) : .primary)
+                .frame(width: 32, height: 32)
+                .background(isSelected ? CampusTheme.accent : Color(.tertiarySystemGroupedBackground), in: Circle())
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(classSession.title)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+                Text("\(classSession.startsAt.formatted(date: .omitted, time: .shortened)) · \(classSession.room)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 0)
+            statusBadge
+        }
+        .contentShape(Rectangle())
+        .campusCard(padding: 14)
+        .overlay {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(isSelected ? CampusTheme.accent : .clear, lineWidth: 1.5)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(isSelected ? "attendance.class.selected" : "attendance.class")
+    }
+
+    @ViewBuilder
+    private var statusBadge: some View {
+        if isHallPassActive {
+            Badge(title: "Pass", color: CampusTheme.accent, symbol: "figure.walk")
+        } else if isLive {
+            Badge(title: "Present", color: CampusTheme.success, symbol: "checkmark.circle.fill")
+        } else if record != nil {
+            Badge(title: "Done", color: CampusTheme.success, symbol: "checkmark")
+        } else if isSelected {
+            Badge(title: "Selected", color: CampusTheme.accent, symbol: "circle.fill")
+        }
+    }
+}
+
+private struct Badge: View {
+    var title: String
+    var color: Color
+    var symbol: String
+
+    var body: some View {
+        Label(title, systemImage: symbol)
+            .labelStyle(.titleAndIcon)
+            .font(.caption.weight(.semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(Color(.tertiarySystemGroupedBackground), in: Capsule())
+            .padding(.vertical, 6)
+            .background(color.opacity(0.12), in: Capsule())
     }
 }

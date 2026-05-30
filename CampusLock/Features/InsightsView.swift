@@ -2,17 +2,9 @@ import SwiftUI
 
 struct InsightsView: View {
     @Environment(CampusLockStore.self) private var store
-    @State private var exportURL: URL?
-    @State private var exportError: String?
-    @State private var isPreparingExport = false
 
     var body: some View {
         CampusScreen {
-            CampusScreenHeader(
-                title: "Stats",
-                subtitle: "Founder-ready attendance and focus signals.",
-                symbol: "clock"
-            )
             HStack(spacing: 10) {
                 MetricTile(value: "\(Int(store.metrics.attendanceRate * 100))%", label: "present")
                 MetricTile(value: "\(Int(store.metrics.averagePassingSeconds / 60))m", label: "avg pass")
@@ -20,49 +12,6 @@ struct InsightsView: View {
             }
             WeeklyChart()
                 .campusCard()
-            InsightCard(title: "Signal", value: "Long passing periods", detail: "Average is up 38 sec this week.")
-            InsightCard(title: "Export", value: "Attendance · focus · zones", detail: "CSV stays local until shared.")
-        }
-        .campusFixedAction {
-            if let exportURL, !isPreparingExport {
-                ShareLink(item: exportURL) {
-                    Label("Share CSV", systemImage: "square.and.arrow.up")
-                }
-                .buttonStyle(CampusPrimaryButtonStyle())
-            } else {
-                Button {
-                    Task { @MainActor in
-                        isPreparingExport = true
-                        defer { isPreparingExport = false }
-                        do {
-                            exportURL = try store.exportAttendanceURL()
-                        } catch {
-                            exportError = error.localizedDescription
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 10) {
-                        if isPreparingExport {
-                            ProgressView()
-                                .controlSize(.small)
-                                .tint(Color(.systemBackground))
-                        }
-                        Label(isPreparingExport ? "Preparing" : "Prepare CSV", systemImage: isPreparingExport ? "hourglass" : "doc.badge.arrow.up")
-                    }
-                }
-                .buttonStyle(CampusPrimaryButtonStyle())
-                .disabled(isPreparingExport)
-                .accessibilityIdentifier("insights.prepareCSV")
-            }
-        }
-        .sensoryFeedback(.selection, trigger: isPreparingExport)
-        .alert("Export Failed", isPresented: Binding(
-            get: { exportError != nil },
-            set: { if !$0 { exportError = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(exportError ?? "Could not create the CSV.")
         }
     }
 }
@@ -109,26 +58,5 @@ private struct WeeklyChart: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Weekly focus chart")
         }
-    }
-}
-
-private struct InsightCard: View {
-    var title: String
-    var value: String
-    var detail: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.title3.weight(.semibold))
-            Text(detail)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .campusCard()
     }
 }

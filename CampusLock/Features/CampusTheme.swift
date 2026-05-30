@@ -49,7 +49,8 @@ struct CampusCard: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(CampusTheme.elevated, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .background(CampusTheme.elevated.opacity(0.74), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .campusGlass(cornerRadius: 24)
             .overlay {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .stroke(Color(.separator).opacity(0.18), lineWidth: 0.5)
@@ -100,44 +101,83 @@ struct CampusBottomBar<Content: View>: View {
             .padding(.horizontal, CampusTheme.screenHorizontalPadding)
             .padding(.top, 10)
             .padding(.bottom, 10)
-            .background(.bar)
-            .overlay(alignment: .top) {
-                Rectangle()
-                    .fill(Color(.separator).opacity(0.18))
-                    .frame(height: 0.5)
+    }
+}
+
+struct CampusGlassGroup<Content: View>: View {
+    var spacing: CGFloat? = nil
+    private let content: Content
+
+    init(spacing: CGFloat? = nil, @ViewBuilder content: () -> Content) {
+        self.spacing = spacing
+        self.content = content()
+    }
+
+    var body: some View {
+        if #available(iOS 26.0, *) {
+            GlassEffectContainer(spacing: spacing) {
+                content
             }
+        } else {
+            content
+        }
     }
 }
 
 struct CampusPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.headline)
-            .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .foregroundStyle(Color(.systemBackground))
-            .background(Color.primary.opacity(configuration.isPressed ? 0.82 : 1), in: Capsule())
-            .scaleEffect(configuration.isPressed ? 0.985 : 1)
-            .contentShape(Capsule())
-            .animation(.snappy(duration: 0.16), value: configuration.isPressed)
+        if #available(iOS 26.0, *) {
+            configuration.label
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .foregroundStyle(.primary)
+                .glassEffect(.regular.tint(CampusTheme.accent.opacity(configuration.isPressed ? 0.18 : 0.26)).interactive(), in: Capsule())
+                .scaleEffect(configuration.isPressed ? 0.985 : 1)
+                .contentShape(Capsule())
+                .animation(.snappy(duration: 0.16), value: configuration.isPressed)
+        } else {
+            configuration.label
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .foregroundStyle(Color(.systemBackground))
+                .background(Color.primary.opacity(configuration.isPressed ? 0.82 : 1), in: Capsule())
+                .scaleEffect(configuration.isPressed ? 0.985 : 1)
+                .contentShape(Capsule())
+                .animation(.snappy(duration: 0.16), value: configuration.isPressed)
+        }
     }
 }
 
 struct CampusSecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.headline)
-            .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .foregroundStyle(.primary)
-            .background(Color(.tertiarySystemGroupedBackground), in: Capsule())
-            .overlay {
-                Capsule().stroke(Color(.separator), lineWidth: 0.5)
-            }
-            .opacity(configuration.isPressed ? 0.75 : 1)
-            .scaleEffect(configuration.isPressed ? 0.985 : 1)
-            .contentShape(Capsule())
-            .animation(.snappy(duration: 0.16), value: configuration.isPressed)
+        if #available(iOS 26.0, *) {
+            configuration.label
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .foregroundStyle(.primary)
+                .glassEffect(.regular.interactive(), in: Capsule())
+                .opacity(configuration.isPressed ? 0.75 : 1)
+                .scaleEffect(configuration.isPressed ? 0.985 : 1)
+                .contentShape(Capsule())
+                .animation(.snappy(duration: 0.16), value: configuration.isPressed)
+        } else {
+            configuration.label
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .foregroundStyle(.primary)
+                .background(Color(.tertiarySystemGroupedBackground), in: Capsule())
+                .overlay {
+                    Capsule().stroke(Color(.separator), lineWidth: 0.5)
+                }
+                .opacity(configuration.isPressed ? 0.75 : 1)
+                .scaleEffect(configuration.isPressed ? 0.985 : 1)
+                .contentShape(Capsule())
+                .animation(.snappy(duration: 0.16), value: configuration.isPressed)
+        }
     }
 }
 
@@ -168,6 +208,36 @@ extension View {
             }
         } else {
             self.background(.thinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        }
+    }
+
+    @ViewBuilder
+    func campusPrimaryAction() -> some View {
+        if #available(iOS 26.0, *) {
+            self
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .buttonBorderShape(.capsule)
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+        } else {
+            self.buttonStyle(CampusPrimaryButtonStyle())
+        }
+    }
+
+    @ViewBuilder
+    func campusSecondaryAction() -> some View {
+        if #available(iOS 26.0, *) {
+            self
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .buttonBorderShape(.capsule)
+                .buttonStyle(.glass)
+                .controlSize(.large)
+        } else {
+            self.buttonStyle(CampusSecondaryButtonStyle())
         }
     }
 }

@@ -7,7 +7,7 @@ public enum CampusLockAnalytics {
         passingDurations: [TimeInterval]
     ) -> DashboardMetrics {
         let presentCount = attendanceRecords.filter { $0.state == .present || $0.state == .checkedOut || $0.state == .manualUnlock }.count
-        let attendanceRate = scheduledClassCount == 0 ? 0 : Double(presentCount) / Double(scheduledClassCount)
+        let attendanceRate = scheduledClassCount == 0 ? 0 : min(1, Double(presentCount) / Double(scheduledClassCount))
         let averagePassingSeconds = passingDurations.isEmpty ? 0 : passingDurations.reduce(0, +) / Double(passingDurations.count)
         let lockedSeconds = attendanceRecords.reduce(0) { total, record in
             guard let checkedOutAt = record.checkedOutAt else { return total }
