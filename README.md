@@ -37,6 +37,18 @@ open CampusLock.xcodeproj
 ./scripts/archive-adhoc.sh
 ```
 
+For a registered-device build that works without Simulator and without archive export:
+
+```sh
+./scripts/build-development-ipa.sh
+```
+
+That writes `build/export/CampusLock-development.ipa` using the local Apple Development profiles. To install directly on Jacob's registered iPhone, keep the phone awake/unlocked and run:
+
+```sh
+./scripts/install-development-build.sh
+```
+
 To check release prerequisites without starting an archive:
 
 ```sh
@@ -52,4 +64,4 @@ The script expects the local Mac/Xcode account to be release-ready:
 
 Current local audit details are in `READINESS_AUDIT.md`.
 
-The release is considered complete only when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`.
+The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists and `./scripts/install-development-build.sh` installs it successfully.
