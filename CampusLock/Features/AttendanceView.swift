@@ -1,5 +1,6 @@
 import CampusLockCore
 import Combine
+import Foundation
 import SwiftUI
 
 struct AttendanceView: View {
@@ -8,6 +9,7 @@ struct AttendanceView: View {
     @State private var feedbackCount = 0
     @State private var now = Date()
     @State private var settingsIsPresented = false
+    @State private var nfcEntryIsPresented = false
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -29,6 +31,29 @@ struct AttendanceView: View {
         .sensoryFeedback(.selection, trigger: feedbackCount)
         .alert(confirmationTitle, isPresented: confirmationBinding) {
             confirmationButtons
+        }
+        .sheet(isPresented: $nfcEntryIsPresented, onDismiss: {
+            store.cancelNFCEntryScan()
+        }) {
+            NFCEntrySheet {
+                feedbackCount += 1
+                nfcEntryIsPresented = false
+                store.enterManuallyFromNFCSheet()
+            } onCancel: {
+                nfcEntryIsPresented = false
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
+        .onChange(of: store.state.isLocked) { _, isLocked in
+            if isLocked {
+                nfcEntryIsPresented = false
+            }
+        }
+        .onChange(of: store.isStartingFocus) { _, isStartingFocus in
+            if isStartingFocus {
+                nfcEntryIsPresented = false
+            }
         }
         .sheet(isPresented: $settingsIsPresented) {
             AppsView()
@@ -92,9 +117,16 @@ struct AttendanceView: View {
             .campusPrimaryAction()
             .disabled(true)
             .accessibilityIdentifier("attendance.locating")
+        } else if selectedClassHasRecordToday {
+            Button {} label: {
+                Label("Done", systemImage: "checkmark.circle.fill")
+            }
+            .campusPrimaryAction()
+            .disabled(true)
+            .accessibilityIdentifier("attendance.done")
         } else {
             Button {
-                confirmation = .enter
+                nfcEntryIsPresented = true
             } label: {
                 Label("Enter \(store.state.selectedClass.title)", systemImage: "arrow.down.circle.fill")
             }
@@ -114,7 +146,7 @@ struct AttendanceView: View {
                     ClassRow(
                         classSession: classSession,
                         isSelected: isSelected,
-                        record: store.state.attendanceRecords.last { $0.session.id == classSession.id },
+                        record: recordToday(for: classSession),
                         isLive: isSelected && store.state.isLocked,
                         isHallPassActive: hallPassIsActive
                     )
@@ -138,8 +170,6 @@ struct AttendanceView: View {
 
     private var confirmationTitle: String {
         switch confirmation {
-        case .enter:
-            "Enter \(store.state.selectedClass.title)?"
         case .exit:
             "Exit \(store.state.selectedClass.title)?"
         case .hallPass:
@@ -158,12 +188,6 @@ struct AttendanceView: View {
         }
 
         switch confirmation {
-        case .enter:
-            Button("Enter") {
-                feedbackCount += 1
-                confirmation = nil
-                store.startFocus()
-            }
         case .exit:
             Button("Exit", role: .destructive) {
                 feedbackCount += 1
@@ -191,13 +215,155 @@ struct AttendanceView: View {
         let totalSeconds = max(0, Int(seconds.rounded(.up)))
         return "\(totalSeconds / 60):\(String(format: "%02d", totalSeconds % 60))"
     }
+
+    private var selectedClassHasRecordToday: Bool {
+        recordToday(for: store.state.selectedClass) != nil
+    }
+
+    private func recordToday(for classSession: ClassSession) -> AttendanceRecord? {
+        store.state.attendanceRecords.last { record in
+            record.session.id == classSession.id
+                && Calendar.current.isDate(record.checkedInAt, inSameDayAs: now)
+        }
+    }
 }
 
 private enum AttendanceConfirmation {
-    case enter
     case exit
     case hallPass
     case endPass
+}
+
+private struct NFCEntrySheet: View {
+    @Environment(CampusLockStore.self) private var store
+    @State private var hasWaitedForTag = false
+    @State private var manualFallbackIsVisible = false
+    var onManualEnter: () -> Void
+    var onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Button(action: onCancel) {
+                    Image(systemName: "xmark")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(width: 36, height: 36)
+                        .campusGlass(cornerRadius: 18, interactive: true)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("attendance.nfc.cancel")
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(spacing: 20) {
+                NFCGlyph(isScanning: store.nfcScanState.isScanning)
+                VStack(spacing: 6) {
+                    Text(store.state.selectedClass.title)
+                        .font(.title2.weight(.semibold))
+                        .lineLimit(1)
+                    Text(statusText ?? " ")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .opacity(statusText == nil ? 0 : 1)
+                        .contentTransition(.opacity)
+                        .accessibilityHidden(statusText == nil)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityIdentifier("attendance.nfcSheet")
+
+            Spacer(minLength: 24)
+
+            Group {
+                if manualFallbackIsVisible {
+                    Button {
+                        onManualEnter()
+                    } label: {
+                        Label("Enter", systemImage: "hand.tap.fill")
+                    }
+                    .campusPrimaryAction()
+                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    .accessibilityIdentifier("attendance.nfc.manualEnter")
+                } else {
+                    Color.clear
+                        .frame(height: 54)
+                        .accessibilityHidden(true)
+                }
+            }
+            .animation(.snappy(duration: 0.22), value: manualFallbackIsVisible)
+        }
+        .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+        .padding(.top, 18)
+        .padding(.bottom, 14)
+        .background(CampusTheme.background.ignoresSafeArea())
+        .task {
+            hasWaitedForTag = false
+            manualFallbackIsVisible = false
+            store.startNFCEntryScan()
+            try? await Task.sleep(for: fallbackDelay)
+            guard !Task.isCancelled, store.nfcScanState.isScanning else { return }
+            withAnimation(.easeInOut(duration: 0.2)) {
+                hasWaitedForTag = true
+                manualFallbackIsVisible = true
+            }
+        }
+        .onChange(of: store.nfcScanState) { _, state in
+            switch state {
+            case .unavailable, .failed:
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    hasWaitedForTag = true
+                    manualFallbackIsVisible = true
+                }
+            case .scanning:
+                break
+            default:
+                hasWaitedForTag = false
+                manualFallbackIsVisible = false
+            }
+        }
+    }
+
+    private var statusText: String? {
+        if hasWaitedForTag && store.nfcScanState.isScanning {
+            "Still searching…"
+        } else {
+            store.nfcScanState.fallbackText
+        }
+    }
+
+    private var fallbackDelay: Duration {
+        ProcessInfo.processInfo.arguments.contains("--ui-testing") ? .milliseconds(650) : .seconds(4)
+    }
+}
+
+private struct NFCGlyph: View {
+    var isScanning: Bool
+    @State private var pulse = false
+
+    var body: some View {
+        ZStack {
+            ForEach([132.0, 96.0, 62.0], id: \.self) { size in
+                Circle()
+                    .stroke(CampusTheme.accent.opacity(size == 62 ? 0.28 : 0.12), lineWidth: size == 62 ? 4 : 8)
+                    .frame(width: size, height: size)
+                    .scaleEffect(isScanning && pulse ? 1.06 : 0.96)
+                    .opacity(isScanning ? 1 : 0.65)
+            }
+
+            Image(systemName: "wave.3.right.circle.fill")
+                .font(.system(size: 44, weight: .semibold))
+                .foregroundStyle(CampusTheme.accent)
+                .symbolEffect(.pulse, options: .repeating, value: isScanning)
+        }
+        .frame(width: 150, height: 150)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
+                pulse = true
+            }
+        }
+    }
 }
 
 private struct HallPassPill: View {

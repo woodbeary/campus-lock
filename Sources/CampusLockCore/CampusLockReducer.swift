@@ -78,6 +78,8 @@ public struct CampusLockReducer: Sendable {
 
         case let .startFocus(date):
             guard state.isSetupComplete else { return }
+            guard state.activeSession == nil else { return }
+            guard !hasRecordToday(for: state.selectedClass, at: date, in: state.attendanceRecords) else { return }
             let session = FocusSession(classSession: state.selectedClass, zone: state.zone, startedAt: date)
             state.activeSession = session
             state.activeHallPass = nil
@@ -116,6 +118,18 @@ public struct CampusLockReducer: Sendable {
         latestRecord.checkedOutAt = date
         latestRecord.state = attendanceState
         state.attendanceRecords[state.attendanceRecords.count - 1] = latestRecord
+    }
+
+    private func hasRecordToday(
+        for classSession: ClassSession,
+        at date: Date,
+        in records: [AttendanceRecord],
+        calendar: Calendar = .current
+    ) -> Bool {
+        records.contains { record in
+            record.session.id == classSession.id
+                && calendar.isDate(record.checkedInAt, inSameDayAs: date)
+        }
     }
 }
 

@@ -46,8 +46,10 @@ final class CampusLockUITests: XCTestCase {
         assertActionSitsInBottomSafeArea("attendance.enter", app: app)
 
         app.buttons["attendance.enter"].tap()
-        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 3))
-        app.alerts.firstMatch.buttons["Enter"].tap()
+        XCTAssertTrue(app.otherElements["attendance.nfcSheet"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["attendance.nfc.manualEnter"].exists, "manual fallback should not appear before the NFC scan gets a chance to run")
+        XCTAssertTrue(app.buttons["attendance.nfc.manualEnter"].waitForExistence(timeout: 5))
+        app.buttons["attendance.nfc.manualEnter"].tap()
 
         XCTAssertFalse(app.buttons["attendance.enter"].exists)
         XCTAssertTrue(app.buttons["attendance.hallPass"].waitForExistence(timeout: 5))
@@ -62,7 +64,9 @@ final class CampusLockUITests: XCTestCase {
         app.buttons["attendance.exit"].tap()
         XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 3))
         app.alerts.firstMatch.buttons["Exit"].tap()
-        XCTAssertTrue(app.buttons["attendance.enter"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["attendance.enter"].exists)
+        XCTAssertTrue(app.buttons["attendance.done"].waitForExistence(timeout: 5))
+        assertActionSitsInBottomSafeArea("attendance.done", app: app)
     }
 
     func testHomeGearOwnsAppsZoneAndStats() {

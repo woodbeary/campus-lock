@@ -22,6 +22,7 @@ final class CampusLockStore {
     var isLocating = false
     var isStartingFocus = false
     var hasConfirmedPermissionOnboarding = false
+    var nfcScanState: NFCScanState = .idle
 
     #if canImport(FamilyControls)
     var activitySelection = FamilyActivitySelection() {
@@ -35,6 +36,7 @@ final class CampusLockStore {
     @ObservationIgnored private let reducer = CampusLockReducer()
     @ObservationIgnored private let screenTimeController = ScreenTimeController()
     @ObservationIgnored private let locationController = LocationController()
+    @ObservationIgnored private let nfcSessionController = NFCSessionController()
     @ObservationIgnored private let repository = CampusLockRepository()
     @ObservationIgnored private let isUITesting: Bool
     @ObservationIgnored private let requiresSetupInUITests: Bool
@@ -69,6 +71,12 @@ final class CampusLockStore {
         }
         locationController.onAuthorizationChange = { [weak self] status in
             self?.handleLocationAuthorizationChange(status)
+        }
+        nfcSessionController.onStateChange = { [weak self] state in
+            self?.nfcScanState = state
+        }
+        nfcSessionController.onDetected = { [weak self] in
+            self?.startFocus()
         }
         if isUITesting && !requiresSetupInUITests {
             apply(.updateLocation(Coordinate(latitude: 33.6405, longitude: -117.8443)))
@@ -296,6 +304,24 @@ final class CampusLockStore {
                 }
             }
         }
+    }
+
+    func startNFCEntryScan() {
+        guard !state.isLocked else { return }
+        if isUITesting {
+            nfcScanState = .scanning
+            return
+        }
+        nfcSessionController.beginScanning()
+    }
+
+    func cancelNFCEntryScan() {
+        nfcSessionController.cancel()
+    }
+
+    func enterManuallyFromNFCSheet() {
+        cancelNFCEntryScan()
+        startFocus()
     }
 
     private func beginFocus() {

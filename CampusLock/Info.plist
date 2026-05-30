@@ -44,6 +44,8 @@
 	<string>Campus Lock can unlock apps when you leave the class zone.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Campus Lock uses your current location to draw the class radius.</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>Campus Lock starts attendance when you hold iPhone near a class NFC tag.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

@@ -77,6 +77,18 @@ struct CampusLockReducerTests {
         #expect(record.checkedOutAt == start.addingTimeInterval(180))
     }
 
+    @Test("completed class cannot start twice in one day")
+    func completedClassCannotStartTwiceInOneDay() {
+        var state = CampusLockState(isSetupComplete: true)
+        reducer.reduce(&state, event: .startFocus(start))
+        reducer.reduce(&state, event: .manualUnlock(start.addingTimeInterval(180)))
+
+        reducer.reduce(&state, event: .startFocus(start.addingTimeInterval(300)))
+
+        #expect(state.activeSession == nil)
+        #expect(state.attendanceRecords.count == 1)
+    }
+
     @Test("hall pass pauses during an active class only")
     func hallPassRequiresActiveClass() throws {
         var state = CampusLockState(isSetupComplete: true)

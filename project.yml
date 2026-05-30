@@ -54,6 +54,7 @@ targets:
         NSLocationAlwaysAndWhenInUseUsageDescription: Campus Lock can unlock apps when you leave the class zone.
         NSLocationAlwaysUsageDescription: Campus Lock can unlock apps when you leave the class zone.
         UIApplicationSupportsIndirectInputEvents: true
+        NFCReaderUsageDescription: Campus Lock starts attendance when you hold iPhone near a class NFC tag.
         UIBackgroundModes:
           - location
         UILaunchScreen: {}
@@ -61,6 +62,8 @@ targets:
       path: CampusLock/CampusLock.entitlements
       properties:
         com.apple.developer.family-controls: true
+        com.apple.developer.nfc.readersession.formats:
+          - TAG
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock

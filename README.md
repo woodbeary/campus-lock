@@ -13,7 +13,8 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 - `ManagedSettingsStore` shields for selected apps/categories.
 - Custom Screen Time shield configuration and action extensions.
 - Native MapKit classroom radius around the current location with a 50-500 meter slider and Always Location setup gate.
-- Tap-in attendance that starts focus and tap-out/manual unlock that ends it.
+- Native Core NFC tap-in attendance: any detected tag starts focus, with delayed manual fallback for demos.
+- Tap-out/manual unlock that ends attendance and focus.
 - Geofence exit path that unlocks when the user leaves the radius.
 - Local JSON persistence, attendance history, and compact settings-based insights.
 - Native SwiftUI interface with iOS 26 Liquid Glass where available and fallback materials elsewhere.
@@ -43,6 +44,22 @@ To run the full release-readiness gate, including E2E execution and ad hoc expor
 ```
 
 This command is intentionally stricter than `./scripts/verify.sh`; it fails until UI tests execute on an eligible iOS destination and `./scripts/archive-adhoc.sh` produces a shareable archive export.
+
+To run the read-only TestFlight readiness check:
+
+```sh
+./scripts/testflight-readiness.sh
+```
+
+This validates ASC auth, verifies that an App Store Connect app record exists for `com.woodbeary.campuslock`, and lists TestFlight groups/public-link state when available. If the app record is missing, it prints the exact guarded `asc web apps create` command.
+
+To archive/upload once the ASC app record and signing are ready:
+
+```sh
+./scripts/archive-testflight.sh
+./scripts/publish-testflight.sh
+./scripts/create-testflight-public-link.sh
+```
 
 To run the read-only App Store Connect signing readiness check:
 
@@ -194,8 +211,9 @@ Current external blockers on this Mac:
 
 - Xcode is `26.1` with iPhoneOS `26.1`; the test iPhone is iOS `26.4.2`, so Xcode marks the phone ineligible for E2E tests and archive destinations.
 - `xcodebuild -downloadPlatform iOS -buildVersion 26.4.2` and `26.4` report that those platforms are not available through this Xcode install.
+- The current App Store Connect credential passes auth, but `./scripts/testflight-readiness.sh` reports that no ASC app record exists yet for `com.woodbeary.campuslock`.
 - The current App Store Connect credential passes read-only bundle/cert/device checks but cannot create provisioning profiles; `./scripts/create-adhoc-profiles.sh` needs Team Admin credentials.
 - `./scripts/audit-adhoc-profiles.sh` finds zero remote `IOS_APP_ADHOC` candidates for the three Campus Lock bundle IDs, so there are no ready remote profiles to download/install with the current account.
 - Installed release-testing/ad hoc profiles for the app and both shield extensions do not include the Family Controls Distribution entitlement.
 
-The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh` or `./scripts/archive-adhoc-from-built-app.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists, `./scripts/install-development-build.sh` installs it successfully, and the installed app launch/visual smoke test passes on the unlocked phone.
+The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`, `./scripts/archive-adhoc-from-built-app.sh`, or TestFlight upload tooling, and the exported artifact passes verification. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists, `./scripts/install-development-build.sh` installs it successfully, and the installed app launch/visual smoke test passes on the unlocked phone.
