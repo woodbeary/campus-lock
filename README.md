@@ -33,6 +33,14 @@ To run the full release-readiness gate, including E2E execution and ad hoc expor
 
 This command is intentionally stricter than `./scripts/verify.sh`; it fails until UI tests execute on an eligible iOS destination and `./scripts/archive-adhoc.sh` produces a shareable archive export.
 
+To run the read-only App Store Connect signing readiness check:
+
+```sh
+./scripts/asc-release-readiness.sh
+```
+
+This verifies the three bundle IDs, Family Controls capabilities, distribution certificate, and registered iPhone without creating profiles.
+
 To smoke-test the latest installed registered-device build:
 
 ```sh
