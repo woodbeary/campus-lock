@@ -132,6 +132,8 @@ If Xcode cannot run a normal archive destination but Team Admin ad hoc profiles 
 ./scripts/archive-adhoc-from-built-app.sh
 ```
 
+The fallback still runs signing/profile/disk checks; it skips only the Xcode destination check that normal archives require.
+
 For a registered-device build that works without Simulator and without archive export:
 
 ```sh
