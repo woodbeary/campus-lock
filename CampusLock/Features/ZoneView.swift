@@ -4,14 +4,17 @@ import SwiftUI
 
 struct ZoneView: View {
     @Environment(CampusLockStore.self) private var store
+    @State private var didEnableZone = false
 
     var body: some View {
         @Bindable var store = store
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("Current location radius")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                CampusScreenHeader(
+                    title: "Zone",
+                    subtitle: "Draw the classroom radius around your current location.",
+                    symbol: "location"
+                )
                 ZoneMapCard(center: store.state.zone.center, radius: store.state.zone.radiusMeters)
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Radius")
@@ -30,17 +33,25 @@ struct ZoneView: View {
                     .accessibilityIdentifier("zone.radius")
                 }
                 .campusCard()
+            }
+            .padding(20)
+            .padding(.bottom, 96)
+            .campusLoadIn()
+        }
+        .background(CampusTheme.background)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CampusBottomBar {
                 Button("Enable Zone") {
+                    didEnableZone.toggle()
                     store.startFocus()
                     store.selectedTab = .lock
                 }
                 .buttonStyle(CampusPrimaryButtonStyle())
-                Spacer()
+                .accessibilityIdentifier("zone.enable")
             }
-            .padding(20)
-            .background(CampusTheme.background)
-            .navigationTitle("Zone")
         }
+        .sensoryFeedback(.selection, trigger: Int(store.state.zone.radiusMeters))
+        .sensoryFeedback(.success, trigger: didEnableZone)
     }
 }
 
@@ -76,7 +87,7 @@ private struct ZoneMapCard: View {
                 .padding(.bottom, 14)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 420)
+        .frame(height: 380)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .campusGlass(cornerRadius: 28)
         .onAppear(perform: refreshCamera)

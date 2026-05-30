@@ -33,6 +33,7 @@
 		C7B63F44E146A6BEA922742F /* AttendanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6191207A9A5505CD07477BE5 /* AttendanceView.swift */; };
 		C821BDE5ABCB9711E15A468B /* CampusLockShieldConfiguration.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2CF644034175F8863137D1E2 /* CampusLockShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C8E5FEE63F8811B25D54B3CD /* CampusLockUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877C939408154B9E3E4A70D6 /* CampusLockUITests.swift */; };
+		D573CAFA874690426B7442E4 /* SessionTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8AB288EC24F770F631AD743 /* SessionTiming.swift */; };
 		D65151451E63A1343571D43D /* ShieldActionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095583FEB2CE98AAC024E9E6 /* ShieldActionExtension.swift */; };
 		DAC36F72BB253EE6F379A177 /* AppIcon60x60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E7B464C6DB3E5E220B13498 /* AppIcon60x60@3x.png */; };
 		E3E78B532361DDF4FB7EB17B /* CampusLockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3BA9BCFE68092B9C1CD4F7 /* CampusLockRepository.swift */; };
@@ -157,6 +158,7 @@
 		BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CampusLockCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C84B77D953F9B64A421026A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D6B190C7D433828D64863CBD /* ScreenTimeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenTimeController.swift; sourceTree = "<group>"; };
+		D8AB288EC24F770F631AD743 /* SessionTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTiming.swift; sourceTree = "<group>"; };
 		E5C72D4C4356280F6C1B77F8 /* CampusLockAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockAnalytics.swift; sourceTree = "<group>"; };
 		E9634DD49CC219C120026CEA /* ShieldConfigurationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfigurationExtension.swift; sourceTree = "<group>"; };
 		ED277027D9ED0AFC979D79B1 /* CampusLockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockApp.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 				E5C72D4C4356280F6C1B77F8 /* CampusLockAnalytics.swift */,
 				390CECC6740FCA8AEBA48449 /* CampusLockModels.swift */,
 				3CED9649C8FF37353C14F24F /* CampusLockReducer.swift */,
+				D8AB288EC24F770F631AD743 /* SessionTiming.swift */,
 			);
 			name = CampusLockCore;
 			path = Sources/CampusLockCore;
@@ -565,6 +568,7 @@
 				B31EB91455A8C1A942C52E75 /* CampusLockAnalytics.swift in Sources */,
 				BCD2E78CB656E334418304CF /* CampusLockModels.swift in Sources */,
 				9E67B7D5C9E4FC0524DB6151 /* CampusLockReducer.swift in Sources */,
+				D573CAFA874690426B7442E4 /* SessionTiming.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -630,6 +634,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_ENTITLEMENTS = CampusLock/CampusLock.entitlements;
 				INFOPLIST_FILE = CampusLock/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.campuslock;
 				PRODUCT_NAME = CampusLock;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -673,6 +678,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_ENTITLEMENTS = CampusLock/CampusLock.entitlements;
 				INFOPLIST_FILE = CampusLock/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.campuslock;
 				PRODUCT_NAME = CampusLock;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -693,6 +699,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				GENERATE_INFOPLIST_FILE = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.CampusLockCore;
 				PRODUCT_NAME = CampusLockCore;
@@ -739,6 +746,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				GENERATE_INFOPLIST_FILE = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.CampusLockCore;
 				PRODUCT_NAME = CampusLockCore;

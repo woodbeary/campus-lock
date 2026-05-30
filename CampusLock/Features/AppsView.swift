@@ -10,24 +10,30 @@ struct AppsView: View {
 
     var body: some View {
         @Bindable var store = store
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    Text("Screen Time selection")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    selectedSummary
-                    nativePickerButton
-                    allowedSummary
-                }
-                .padding(20)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                CampusScreenHeader(
+                    title: "Apps",
+                    subtitle: "Choose what disappears during focus.",
+                    symbol: "square.grid.3x3"
+                )
+                selectedSummary
+                allowedSummary
             }
-            .background(CampusTheme.background)
-            .navigationTitle("Apps")
-            #if canImport(FamilyControls)
-            .familyActivityPicker(isPresented: $store.isShowingAppPicker, selection: $store.activitySelection)
-            #endif
+            .padding(20)
+            .padding(.bottom, 96)
+            .campusLoadIn()
         }
+        .background(CampusTheme.background)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CampusBottomBar {
+                nativePickerButton
+            }
+        }
+        .sensoryFeedback(.selection, trigger: store.isShowingAppPicker)
+        #if canImport(FamilyControls)
+        .familyActivityPicker(isPresented: $store.isShowingAppPicker, selection: $store.activitySelection)
+        #endif
     }
 
     private var selectedSummary: some View {

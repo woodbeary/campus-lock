@@ -23,6 +23,7 @@ targets:
         PRODUCT_NAME: CampusLockCore
         GENERATE_INFOPLIST_FILE: "YES"
         SKIP_INSTALL: "YES"
+        DYLIB_INSTALL_NAME_BASE: "@rpath"
         ALWAYS_SEARCH_USER_PATHS: "NO"
   CampusLock:
     type: application
@@ -61,6 +62,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock
         PRODUCT_NAME: CampusLock
         TARGETED_DEVICE_FAMILY: "1"
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
         ALWAYS_SEARCH_USER_PATHS: "NO"
   CampusLockTests:
     type: bundle.unit-test

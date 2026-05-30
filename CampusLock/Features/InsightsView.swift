@@ -4,13 +4,16 @@ struct InsightsView: View {
     @Environment(CampusLockStore.self) private var store
     @State private var exportURL: URL?
     @State private var exportError: String?
+    @State private var isPreparingExport = false
 
     var body: some View {
-        NavigationStack {
+        ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("Founder demo")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                CampusScreenHeader(
+                    title: "Stats",
+                    subtitle: "Founder-ready attendance and focus signals.",
+                    symbol: "clock"
+                )
                 HStack(spacing: 12) {
                     MetricTile(value: "\(Int(store.metrics.attendanceRate * 100))%", label: "present")
                     MetricTile(value: "\(Int(store.metrics.averagePassingSeconds / 60))m", label: "avg pass")
@@ -20,34 +23,54 @@ struct InsightsView: View {
                     .campusCard()
                 InsightCard(title: "Signal", value: "Long passing periods", detail: "Average is up 38 sec this week.")
                 InsightCard(title: "Export", value: "Attendance · focus · zones", detail: "CSV stays local until shared.")
-                Spacer()
-                if let exportURL {
+            }
+            .padding(20)
+            .padding(.bottom, 96)
+            .campusLoadIn()
+        }
+        .background(CampusTheme.background)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CampusBottomBar {
+                if let exportURL, !isPreparingExport {
                     ShareLink(item: exportURL) {
                         Text("Share CSV")
                     }
                     .buttonStyle(CampusPrimaryButtonStyle())
                 } else {
-                    Button("Prepare CSV") {
-                        do {
-                            exportURL = try store.exportAttendanceURL()
-                        } catch {
-                            exportError = error.localizedDescription
+                    Button {
+                        Task { @MainActor in
+                            isPreparingExport = true
+                            defer { isPreparingExport = false }
+                            do {
+                                exportURL = try store.exportAttendanceURL()
+                            } catch {
+                                exportError = error.localizedDescription
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 10) {
+                            if isPreparingExport {
+                                ProgressView()
+                                    .controlSize(.small)
+                                    .tint(Color(.systemBackground))
+                            }
+                            Text(isPreparingExport ? "Preparing" : "Prepare CSV")
                         }
                     }
                     .buttonStyle(CampusPrimaryButtonStyle())
+                    .disabled(isPreparingExport)
+                    .accessibilityIdentifier("insights.prepareCSV")
                 }
             }
-            .padding(20)
-            .background(CampusTheme.background)
-            .navigationTitle("Insights")
-            .alert("Export Failed", isPresented: Binding(
-                get: { exportError != nil },
-                set: { if !$0 { exportError = nil } }
-            )) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(exportError ?? "Could not create the CSV.")
-            }
+        }
+        .sensoryFeedback(.selection, trigger: isPreparingExport)
+        .alert("Export Failed", isPresented: Binding(
+            get: { exportError != nil },
+            set: { if !$0 { exportError = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(exportError ?? "Could not create the CSV.")
         }
     }
 }

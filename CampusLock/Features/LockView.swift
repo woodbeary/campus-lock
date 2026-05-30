@@ -5,23 +5,17 @@ struct LockView: View {
     @Environment(CampusLockStore.self) private var store
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if store.state.isLocked {
-                    FocusActiveView()
-                } else if case let .unlocked(lastRecord) = store.state.lockState, lastRecord != nil {
-                    UnlockedView(record: lastRecord)
-                } else {
-                    ReadyView()
-                }
+        Group {
+            if store.state.isLocked {
+                FocusActiveView()
+            } else if case let .unlocked(lastRecord) = store.state.lockState, lastRecord != nil {
+                UnlockedView(record: lastRecord)
+            } else {
+                ReadyView()
             }
-            .navigationTitle(navigationTitle)
-            .background(CampusTheme.background)
         }
-    }
-
-    private var navigationTitle: String {
-        store.state.isLocked ? "Campus Lock" : "Ready"
+        .background(CampusTheme.background)
+        .campusLoadIn()
     }
 }
 
@@ -80,7 +74,7 @@ private struct ReadyView: View {
             HStack(spacing: 12) {
                 MetricCard(value: "\(store.selectedShieldItemCount)", label: "selected")
                 MetricCard(value: "\(store.state.selectedClass.durationMinutes)m", label: "class")
-                MetricCard(value: "4m", label: "pass")
+                MetricCard(value: "\(averagePassingMinutes)m", label: "avg pass")
             }
 
             HStack(spacing: 14) {
@@ -99,9 +93,13 @@ private struct ReadyView: View {
             }
             .campusCard()
 
-            Spacer()
+            Spacer(minLength: 72)
         }
         .padding(20)
+    }
+
+    private var averagePassingMinutes: Int {
+        max(1, Int((store.metrics.averagePassingSeconds / 60).rounded()))
     }
 }
 
@@ -109,55 +107,71 @@ private struct FocusActiveView: View {
     @Environment(CampusLockStore.self) private var store
 
     var body: some View {
-        VStack(spacing: 26) {
-            Spacer(minLength: 20)
-            ZStack {
-                ForEach([250.0, 196.0, 142.0], id: \.self) { size in
+        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            VStack(spacing: 26) {
+                Spacer(minLength: 20)
+                ZStack {
+                    ForEach([250.0, 196.0, 142.0], id: \.self) { size in
+                        Circle()
+                            .stroke(.white.opacity(size == 142 ? 0.20 : 0.08), lineWidth: size == 142 ? 6 : 12)
+                            .frame(width: size, height: size)
+                    }
                     Circle()
-                        .stroke(.white.opacity(size == 142 ? 0.20 : 0.08), lineWidth: size == 142 ? 6 : 12)
-                        .frame(width: size, height: size)
+                        .fill(.white)
+                        .frame(width: 128, height: 128)
+                    Image(systemName: "lock")
+                        .font(.largeTitle.weight(.semibold))
+                        .foregroundStyle(.black)
                 }
-                Circle()
-                    .fill(.white)
-                    .frame(width: 128, height: 128)
-                Image(systemName: "lock")
+                Text("Locked")
                     .font(.largeTitle.weight(.semibold))
-                    .foregroundStyle(.black)
-            }
-            Text("Locked")
-                .font(.largeTitle.weight(.semibold))
-                .foregroundStyle(.white)
-                .accessibilityIdentifier("lock.lockedTitle")
-            Text("Attendance marked")
-                .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
+                    .accessibilityIdentifier("lock.lockedTitle")
+                Text("Attendance marked")
+                    .foregroundStyle(.secondary)
 
-            HStack(spacing: 12) {
-                MetricCard(value: "18:42", label: "Focus", dark: true)
-                MetricCard(value: "4:15", label: "Passing", dark: true)
-            }
-            HStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Allowed")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("Phone · Messages · Maps")
-                        .font(.headline)
-                        .foregroundStyle(.white)
+                HStack(spacing: 12) {
+                    MetricCard(value: timing(at: timeline.date).elapsedClock, label: "Focus", dark: true)
+                    MetricCard(value: timing(at: timeline.date).remainingClock, label: "Left", dark: true)
                 }
-                Spacer()
+                HStack {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Allowed")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("Phone · Messages · Maps")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                    }
+                    Spacer()
+                }
+                .padding()
+                .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                Spacer(minLength: 72)
             }
-            .padding()
-            .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-            Spacer()
-            Button("Unlock") {
-                store.manualUnlock()
+            .padding(20)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                CampusBottomBar {
+                    Button("Unlock") {
+                        store.manualUnlock()
+                    }
+                    .buttonStyle(CampusSecondaryButtonStyle())
+                    .accessibilityIdentifier("lock.unlock")
+                }
             }
-            .buttonStyle(CampusSecondaryButtonStyle())
-            .accessibilityIdentifier("lock.unlock")
+            .background(Color.black)
+            .preferredColorScheme(.dark)
         }
-        .padding(20)
-        .background(Color.black)
-        .preferredColorScheme(.dark)
+    }
+
+    private func timing(at date: Date) -> SessionTiming {
+        guard let activeSession = store.state.activeSession else {
+            return SessionTiming(
+                session: FocusSession(classSession: store.state.selectedClass, zone: store.state.zone, startedAt: date),
+                now: date
+            )
+        }
+        return SessionTiming(session: activeSession, now: date)
     }
 }
 
@@ -179,24 +193,40 @@ private struct UnlockedView: View {
             Text("Apps available")
                 .font(.title.weight(.semibold))
                 .accessibilityIdentifier("lock.unlockedTitle")
-            Text("Checked out automatically")
+            Text(statusText)
                 .foregroundStyle(.secondary)
             VStack(spacing: 12) {
                 DetailCard(label: "Session", value: "\(record?.session.title ?? store.state.selectedClass.title) · \(record?.session.durationMinutes ?? store.state.selectedClass.durationMinutes) min")
                 DetailCard(label: "Attendance", value: attendanceValue)
             }
-            Spacer()
-            Button("Start Next Class") {
-                store.startFocus()
-            }
-            .buttonStyle(CampusPrimaryButtonStyle())
+            Spacer(minLength: 72)
         }
         .padding(20)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CampusBottomBar {
+                Button("Start Next Class") {
+                    store.startFocus()
+                }
+                .buttonStyle(CampusPrimaryButtonStyle())
+                .accessibilityIdentifier("lock.startNextClass")
+            }
+        }
     }
 
     private var attendanceValue: String {
         guard let checkedOutAt = record?.checkedOutAt else { return "Present" }
         return "Present · \(checkedOutAt.formatted(date: .omitted, time: .shortened))"
+    }
+
+    private var statusText: String {
+        switch record?.state {
+        case .checkedOut:
+            return "Checked out automatically"
+        case .manualUnlock:
+            return "Unlocked manually"
+        case .present, nil:
+            return "Attendance marked"
+        }
     }
 }
 

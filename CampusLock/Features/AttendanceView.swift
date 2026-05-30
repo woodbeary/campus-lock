@@ -3,29 +3,44 @@ import SwiftUI
 
 struct AttendanceView: View {
     @Environment(CampusLockStore.self) private var store
+    @State private var attendanceActionCount = 0
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 18) {
-                    activeClassCard
-                    HStack(spacing: 12) {
-                        Button("Enter") {
-                            store.startFocus()
-                        }
-                        .buttonStyle(CampusPrimaryButtonStyle())
-                        Button("Exit") {
-                            store.manualUnlock()
-                        }
-                        .buttonStyle(CampusSecondaryButtonStyle())
-                    }
-                    scheduleList
-                }
-                .padding(20)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                CampusScreenHeader(
+                    title: "Attendance",
+                    subtitle: "Tap in at the door. Tap out when leaving.",
+                    symbol: "lanyardcard"
+                )
+                activeClassCard
+                scheduleList
             }
-            .background(CampusTheme.background)
-            .navigationTitle("Attendance")
+            .padding(20)
+            .padding(.bottom, 112)
+            .campusLoadIn()
         }
+        .background(CampusTheme.background)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CampusBottomBar {
+                HStack(spacing: 12) {
+                    Button("Enter") {
+                        attendanceActionCount += 1
+                        store.startFocus()
+                    }
+                    .buttonStyle(CampusPrimaryButtonStyle())
+                    .accessibilityIdentifier("attendance.enter")
+
+                    Button("Exit") {
+                        attendanceActionCount += 1
+                        store.manualUnlock()
+                    }
+                    .buttonStyle(CampusSecondaryButtonStyle())
+                    .accessibilityIdentifier("attendance.exit")
+                }
+            }
+        }
+        .sensoryFeedback(.selection, trigger: attendanceActionCount)
     }
 
     private var activeClassCard: some View {
