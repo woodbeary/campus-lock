@@ -116,7 +116,7 @@ For a registered-device build that works without Simulator and without archive e
 ./scripts/build-development-ipa.sh
 ```
 
-That writes `build/export/CampusLock-development.ipa` using the local Apple Development profiles. To install directly on Jacob's registered iPhone, keep the phone awake/unlocked and run:
+That writes `build/export/CampusLock-development.ipa`, copies the same IPA to `~/Downloads/CampusLock-development.ipa`, and uses the local Apple Development profiles. To install directly on Jacob's registered iPhone, keep the phone awake/unlocked and run:
 
 ```sh
 ./scripts/install-development-build.sh
