@@ -15,7 +15,7 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 - Native MapKit classroom radius around the current location with a 50-500 meter slider and Always Location setup gate.
 - Tap-in attendance that starts focus and tap-out/manual unlock that ends it.
 - Geofence exit path that unlocks when the user leaves the radius.
-- Local JSON persistence, attendance history, insights, and CSV export.
+- Local JSON persistence, attendance history, and compact settings-based insights.
 - Native SwiftUI interface with iOS 26 Liquid Glass where available and fallback materials elsewhere.
 
 ## Verify locally
@@ -168,5 +168,12 @@ The script expects the local Mac/Xcode account to be release-ready:
 - Family Controls Development and Distribution are approved for the main app and both shield extension bundle IDs.
 
 Current local audit details are in `READINESS_AUDIT.md`, `COMPLETION_AUDIT.md`, and the machine-readable `RELEASE_BLOCKERS.json`.
+
+Current external blockers on this Mac:
+
+- Xcode is `26.1` with iPhoneOS `26.1`; the test iPhone is iOS `26.4.2`, so Xcode marks the phone ineligible for E2E tests and archive destinations.
+- `xcodebuild -downloadPlatform iOS -buildVersion 26.4.2` and `26.4` report that those platforms are not available through this Xcode install.
+- The current App Store Connect credential passes read-only bundle/cert/device checks but cannot create provisioning profiles; `./scripts/create-adhoc-profiles.sh` needs Team Admin credentials.
+- Installed release-testing/ad hoc profiles for the app and both shield extensions do not include the Family Controls Distribution entitlement.
 
 The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists, `./scripts/install-development-build.sh` installs it successfully, and the installed app launch/visual smoke test passes on the unlocked phone.
