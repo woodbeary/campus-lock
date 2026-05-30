@@ -57,6 +57,12 @@ CONFIRM_CREATE_ADHOC_PROFILES=1 ./scripts/create-adhoc-profiles.sh
 
 This command is guarded because it mutates Apple Developer state.
 
+To inspect disk space blockers without deleting anything:
+
+```sh
+./scripts/disk-unblock-audit.sh
+```
+
 To smoke-test the latest installed registered-device build:
 
 ```sh
