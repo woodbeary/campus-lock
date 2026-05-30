@@ -3,8 +3,8 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-echo "== Swift package tests =="
-swift test
+echo "== Swift package tests with coverage =="
+./scripts/test-coverage.sh
 
 echo "== Generate Xcode project =="
 xcodegen generate
