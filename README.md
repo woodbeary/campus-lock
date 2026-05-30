@@ -122,6 +122,14 @@ That writes `build/export/CampusLock-development.ipa` using the local Apple Deve
 ./scripts/install-development-build.sh
 ```
 
+For a quick registered-device launch smoke after install:
+
+```sh
+./scripts/smoke-device-launch.sh
+```
+
+Both device scripts write `devicectl` logs under `build/export` and print specific next steps for locked-phone, CoreDevice timeout, and interrupted-connection failures.
+
 To check release prerequisites without starting an archive:
 
 ```sh
