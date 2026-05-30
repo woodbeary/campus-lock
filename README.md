@@ -73,6 +73,19 @@ CONFIRM_CREATE_ADHOC_PROFILES=1 ./scripts/create-adhoc-profiles.sh
 
 This command is guarded because it mutates Apple Developer state.
 
+To safely audit whether matching remote ad hoc profiles already exist without
+printing provisioning profile contents:
+
+```sh
+./scripts/audit-adhoc-profiles.sh
+```
+
+If that audit passes, install the matching downloaded profiles locally:
+
+```sh
+INSTALL_MATCHING_PROFILES=1 ./scripts/audit-adhoc-profiles.sh
+```
+
 To generate deterministic manual export options from installed Family Controls ad hoc profiles:
 
 ```sh
@@ -182,6 +195,7 @@ Current external blockers on this Mac:
 - Xcode is `26.1` with iPhoneOS `26.1`; the test iPhone is iOS `26.4.2`, so Xcode marks the phone ineligible for E2E tests and archive destinations.
 - `xcodebuild -downloadPlatform iOS -buildVersion 26.4.2` and `26.4` report that those platforms are not available through this Xcode install.
 - The current App Store Connect credential passes read-only bundle/cert/device checks but cannot create provisioning profiles; `./scripts/create-adhoc-profiles.sh` needs Team Admin credentials.
+- `./scripts/audit-adhoc-profiles.sh` finds zero remote `IOS_APP_ADHOC` candidates for the three Campus Lock bundle IDs, so there are no ready remote profiles to download/install with the current account.
 - Installed release-testing/ad hoc profiles for the app and both shield extensions do not include the Family Controls Distribution entitlement.
 
 The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh` or `./scripts/archive-adhoc-from-built-app.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists, `./scripts/install-development-build.sh` installs it successfully, and the installed app launch/visual smoke test passes on the unlocked phone.
