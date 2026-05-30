@@ -35,7 +35,11 @@ private struct MainTabView: View {
                 .tabItem { Label(AppTab.attendance.title, systemImage: AppTab.attendance.symbol) }
                 .tag(AppTab.attendance)
         }
+        .tabViewStyle(.automatic)
         .background(CampusTheme.background.ignoresSafeArea())
+        .toolbar(.visible, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarBackground(.bar, for: .tabBar)
         .animation(.snappy(duration: 0.18), value: store.selectedTab)
         .sensoryFeedback(.selection, trigger: store.selectedTab)
     }

@@ -6,6 +6,17 @@ final class CampusLockUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    func testSetupScreenKeepsFooterAndFixedAction() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-setup-required"]
+        app.launch()
+
+        XCTAssertTrue(tabButton("Lock", app: app).waitForExistence(timeout: 5))
+        assertFooterTabsStayReachable(app)
+        XCTAssertTrue(app.buttons["setup.continue"].waitForExistence(timeout: 5))
+        assertActionSitsAboveFooter("setup.continue", app: app)
+    }
+
     func testSetupStartFocusAndUnlockFlow() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]
@@ -54,6 +65,7 @@ final class CampusLockUITests: XCTestCase {
             XCTAssertTrue(tab.waitForExistence(timeout: 5), "\(tabLabel) tab should exist")
             XCTAssertTrue(tab.isHittable, "\(tabLabel) tab should be hittable")
             XCTAssertGreaterThan(tab.frame.midY, app.frame.midY, "\(tabLabel) should stay in the native footer area")
+            XCTAssertLessThanOrEqual(tab.frame.maxY, app.frame.maxY, "\(tabLabel) should not be cropped below the screen")
         }
     }
 
@@ -65,6 +77,8 @@ final class CampusLockUITests: XCTestCase {
         XCTAssertTrue(action.isHittable, "\(actionIdentifier) should be hittable")
         XCTAssertGreaterThan(action.frame.minY, app.frame.midY, "\(actionIdentifier) should stay in the predictable bottom action area")
         XCTAssertLessThan(action.frame.maxY, footer.frame.minY, "\(actionIdentifier) should not overlap the footer")
+        XCTAssertGreaterThan(footer.frame.minY - action.frame.maxY, 2, "\(actionIdentifier) should leave visible breathing room above the footer")
+        XCTAssertGreaterThanOrEqual(action.frame.minY, app.frame.minY, "\(actionIdentifier) should not be cropped above the screen")
     }
 
     private func tabButton(_ label: String, app: XCUIApplication) -> XCUIElement {

@@ -34,6 +34,7 @@ final class CampusLockStore {
         state: CampusLockState = CampusLockState(),
         isUITesting: Bool = ProcessInfo.processInfo.arguments.contains("--ui-testing")
     ) {
+        let arguments = ProcessInfo.processInfo.arguments
         self.isUITesting = isUITesting
         self.state = isUITesting ? state : repository.load() ?? state
         #if canImport(FamilyControls)
@@ -44,7 +45,7 @@ final class CampusLockStore {
         locationController.onLocationUpdate = { [weak self] coordinate in
             self?.handleLocationUpdate(coordinate)
         }
-        if isUITesting {
+        if isUITesting && !arguments.contains("--ui-testing-setup-required") {
             apply(.completeSetup)
         }
     }

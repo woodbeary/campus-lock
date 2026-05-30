@@ -6,34 +6,31 @@ struct AttendanceView: View {
     @State private var attendanceActionCount = 0
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CampusTheme.screenSpacing) {
-                CampusScreenHeader(
-                    title: "Attendance",
-                    subtitle: "Tap in at the door. Tap out when leaving.",
-                    symbol: "lanyardcard"
-                )
-                activeClassCard
-                scheduleList
-            }
-            .padding(.horizontal, CampusTheme.screenHorizontalPadding)
-            .padding(.top, CampusTheme.screenTopPadding)
-            .padding(.bottom, CampusTheme.scrollBottomPadding())
-            .campusLoadIn()
+        CampusScreen {
+            CampusScreenHeader(
+                title: "Attendance",
+                subtitle: "Tap in at the door. Tap out when leaving.",
+                symbol: "lanyardcard"
+            )
+            activeClassCard
+            scheduleList
         }
-        .background(CampusTheme.background)
         .campusFixedAction {
             HStack(spacing: 10) {
-                Button("Enter") {
+                Button {
                     attendanceActionCount += 1
                     store.startFocus()
+                } label: {
+                    Label("Enter", systemImage: "arrow.down.circle.fill")
                 }
                 .buttonStyle(CampusPrimaryButtonStyle())
                 .accessibilityIdentifier("attendance.enter")
 
-                Button("Exit") {
+                Button {
                     attendanceActionCount += 1
                     store.manualUnlock()
+                } label: {
+                    Label("Exit", systemImage: "arrow.up.circle.fill")
                 }
                 .buttonStyle(CampusSecondaryButtonStyle())
                 .accessibilityIdentifier("attendance.exit")

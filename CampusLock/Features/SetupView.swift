@@ -6,24 +6,13 @@ struct SetupView: View {
     @State private var isWorking = false
 
     var body: some View {
-        GeometryReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    header
-                    permissionRows
-                    mvpRule
-                }
-                .frame(maxWidth: .infinity, minHeight: max(0, proxy.size.height - 130), alignment: .topLeading)
-                .padding(.horizontal, CampusTheme.screenHorizontalPadding)
-                .padding(.top, CampusTheme.screenTopPadding)
-                .padding(.bottom, CampusTheme.scrollBottomPadding())
-                .campusLoadIn()
-            }
-            .defaultScrollAnchor(.top)
-            .contentMargins(.top, 0, for: .scrollContent)
-            .campusFixedAction {
-                bottomAction
-            }
+        CampusScreen {
+            header
+            permissionRows
+            mvpRule
+        }
+        .campusFixedAction {
+            bottomAction
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(CampusTheme.background.ignoresSafeArea())
@@ -50,12 +39,12 @@ struct SetupView: View {
 
     private var mvpRule: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("MVP flow")
+            Text("Flow")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Text("Tap in. Lock apps. Walk out.")
                 .font(.headline.weight(.semibold))
-            Text("No admin/student split for the demo.")
+            Text("One founder demo surface, no admin/student split.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -81,7 +70,8 @@ struct SetupView: View {
                         .controlSize(.small)
                         .tint(Color(.systemBackground))
                 }
-                Text(isWorking ? "Setting Up" : "Continue")
+                Label(isWorking ? "Setting Up" : "Continue", systemImage: isWorking ? "hourglass" : "arrow.right")
+                    .labelStyle(.titleAndIcon)
             }
         }
         .buttonStyle(CampusPrimaryButtonStyle())

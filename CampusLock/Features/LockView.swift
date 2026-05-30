@@ -15,7 +15,6 @@ struct LockView: View {
             }
         }
         .background(CampusTheme.background)
-        .campusLoadIn()
     }
 }
 
@@ -23,22 +22,11 @@ private struct ReadyView: View {
     @Environment(CampusLockStore.self) private var store
 
     var body: some View {
-        GeometryReader { proxy in
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: CampusTheme.screenSpacing) {
-                    header
-                    readyCard(compact: proxy.size.height < 760)
-                    statusBlock
-                    metricsRow
-                }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: max(0, proxy.size.height - CampusTheme.scrollBottomPadding()), alignment: .top)
-                .padding(.horizontal, CampusTheme.screenHorizontalPadding)
-                .padding(.top, CampusTheme.screenTopPadding)
-                .padding(.bottom, CampusTheme.scrollBottomPadding())
-            }
-            .contentMargins(.top, 0, for: .scrollContent)
-            .background(CampusTheme.background)
+        CampusScreen {
+            header
+            readyCard
+            statusBlock
+            metricsRow
         }
         .campusFixedAction {
             Button {
@@ -79,24 +67,24 @@ private struct ReadyView: View {
         .campusCard(padding: 16)
     }
 
-    private func readyCard(compact: Bool) -> some View {
-        VStack(spacing: compact ? 14 : 18) {
+    private var readyCard: some View {
+        VStack(spacing: 14) {
             ZStack {
-                ForEach([compact ? 138.0 : 154.0, compact ? 104.0 : 116.0, compact ? 72.0 : 80.0], id: \.self) { size in
+                ForEach([132.0, 98.0, 68.0], id: \.self) { size in
                     Circle()
                         .stroke(CampusTheme.accent.opacity(size < 90 ? 0.95 : 0.14), lineWidth: size < 90 ? 3 : 7)
                         .frame(width: size, height: size)
                 }
 
                 Image(systemName: "location.north.circle.fill")
-                    .font(.system(size: compact ? 42 : 48, weight: .semibold))
+                    .font(.system(size: 40, weight: .semibold))
                     .foregroundStyle(CampusTheme.accent)
             }
-            .frame(height: compact ? 148 : 168)
+            .frame(height: 140)
 
             VStack(spacing: 4) {
                 Text("Ready")
-                    .font(.largeTitle.weight(.semibold))
+                    .font(.title.weight(.semibold))
                     .lineLimit(1)
                 Text("Tap in at the door to mark attendance and lock selected apps.")
                     .font(.callout)
@@ -106,7 +94,7 @@ private struct ReadyView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .campusCard(padding: compact ? 18 : 22)
+        .campusCard(padding: 18)
     }
 
     private var statusBlock: some View {
@@ -143,75 +131,84 @@ private struct FocusActiveView: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
-            GeometryReader { proxy in
-                let compact = proxy.size.height < 760
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: compact ? 18 : 26) {
-                        lockMark(compact: compact)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
+                    lockMark
 
-                        VStack(spacing: 6) {
-                            Text("Locked")
-                                .font(.largeTitle.weight(.semibold))
-                                .foregroundStyle(.white)
-                                .accessibilityIdentifier("lock.lockedTitle")
-                            Text("Attendance marked")
-                                .foregroundStyle(.secondary)
-                        }
+                    VStack(spacing: 5) {
+                        Text("Locked")
+                            .font(.largeTitle.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .accessibilityIdentifier("lock.lockedTitle")
+                        Text("Attendance marked")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
 
-                        HStack(spacing: 12) {
-                            MetricCard(value: timing(at: timeline.date).elapsedClock, label: "Focus", dark: true)
-                            MetricCard(value: timing(at: timeline.date).remainingClock, label: "Left", dark: true)
-                        }
-                        HStack {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Allowed")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text("Phone · Messages · Maps")
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
-                            }
-                            Spacer()
-                        }
-                        .padding()
-                        .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    HStack(spacing: 12) {
+                        MetricCard(value: timing(at: timeline.date).elapsedClock, label: "Focus", dark: true)
+                        MetricCard(value: timing(at: timeline.date).remainingClock, label: "Left", dark: true)
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: max(0, proxy.size.height - CampusTheme.scrollBottomPadding()), alignment: .center)
-                    .padding(20)
-                    .padding(.top, CampusTheme.screenTopPadding)
-                    .padding(.bottom, CampusTheme.scrollBottomPadding())
+
+                    allowedCard
                 }
-                .campusFixedAction {
-                    Button("Unlock") {
-                        store.manualUnlock()
-                    }
-                    .buttonStyle(CampusSecondaryButtonStyle())
-                    .accessibilityIdentifier("lock.unlock")
-                }
-                .background(Color.black)
+                .frame(maxWidth: CampusTheme.contentMaxWidth)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+                .padding(.top, 28)
+                .padding(.bottom, CampusTheme.scrollBottomPadding())
             }
-            .preferredColorScheme(.dark)
+            .background(Color.black)
+            .campusFixedAction {
+                Button {
+                    store.manualUnlock()
+                } label: {
+                    Label("Unlock", systemImage: "lock.open.fill")
+                }
+                .buttonStyle(CampusSecondaryButtonStyle())
+                .accessibilityIdentifier("lock.unlock")
+            }
         }
+        .preferredColorScheme(.dark)
+        .sensoryFeedback(.success, trigger: store.state.isLocked)
     }
 
-    private func lockMark(compact: Bool) -> some View {
-        let rings = compact ? [208.0, 164.0, 120.0] : [250.0, 196.0, 142.0]
-        let fill = compact ? 110.0 : 128.0
-        return ZStack {
-            ForEach(rings, id: \.self) { size in
+    private var lockMark: some View {
+        ZStack {
+            ForEach([210.0, 164.0, 120.0], id: \.self) { size in
                 Circle()
-                    .stroke(.white.opacity(size == rings.last ? 0.20 : 0.08), lineWidth: size == rings.last ? 6 : 12)
+                    .stroke(.white.opacity(size == 120 ? 0.20 : 0.08), lineWidth: size == 120 ? 6 : 12)
                     .frame(width: size, height: size)
             }
             Circle()
                 .fill(.white)
-                .frame(width: fill, height: fill)
+                .frame(width: 108, height: 108)
             Image(systemName: "lock")
                 .font(.largeTitle.weight(.semibold))
                 .foregroundStyle(.black)
         }
-        .frame(height: compact ? 220 : 270)
+        .frame(height: 222)
+    }
+
+    private var allowedCard: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.shield.fill")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 38, height: 38)
+                .background(.white.opacity(0.12), in: Circle())
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Allowed")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("Phone · Messages · Maps")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding()
+        .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 
     private func timing(at date: Date) -> SessionTiming {
@@ -230,46 +227,40 @@ private struct UnlockedView: View {
     var record: AttendanceRecord?
 
     var body: some View {
-        GeometryReader { proxy in
-            let compact = proxy.size.height < 760
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: compact ? 18 : 26) {
-                    successMark(compact: compact)
-                    VStack(spacing: 6) {
-                        Text("Apps available")
-                            .font(.title.weight(.semibold))
-                            .accessibilityIdentifier("lock.unlockedTitle")
-                        Text(statusText)
-                            .foregroundStyle(.secondary)
-                    }
-                    VStack(spacing: 12) {
-                        DetailCard(label: "Session", value: "\(record?.session.title ?? store.state.selectedClass.title) · \(record?.session.durationMinutes ?? store.state.selectedClass.durationMinutes) min")
-                        DetailCard(label: "Attendance", value: attendanceValue)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: max(0, proxy.size.height - CampusTheme.scrollBottomPadding()), alignment: .center)
-                .padding(20)
-                .padding(.top, CampusTheme.screenTopPadding)
-                .padding(.bottom, CampusTheme.scrollBottomPadding())
+        CampusScreen(alignment: .center) {
+            successMark
+            VStack(spacing: 6) {
+                Text("Apps available")
+                    .font(.title.weight(.semibold))
+                    .accessibilityIdentifier("lock.unlockedTitle")
+                Text(statusText)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
             }
-            .campusFixedAction {
-                Button("Start Next Class") {
-                    store.startFocus()
-                }
-                .buttonStyle(CampusPrimaryButtonStyle())
-                .accessibilityIdentifier("lock.startNextClass")
+
+            VStack(spacing: 12) {
+                DetailCard(label: "Session", value: "\(record?.session.title ?? store.state.selectedClass.title) · \(record?.session.durationMinutes ?? store.state.selectedClass.durationMinutes) min")
+                DetailCard(label: "Attendance", value: attendanceValue)
             }
+        }
+        .campusFixedAction {
+            Button {
+                store.startFocus()
+            } label: {
+                Label("Start Next Class", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(CampusPrimaryButtonStyle())
+            .accessibilityIdentifier("lock.startNextClass")
         }
     }
 
-    private func successMark(compact: Bool) -> some View {
+    private var successMark: some View {
         Circle()
             .stroke(CampusTheme.success, lineWidth: 5)
-            .frame(width: compact ? 142 : 178, height: compact ? 142 : 178)
+            .frame(width: 142, height: 142)
             .overlay {
                 Image(systemName: "checkmark")
-                    .font(.system(size: compact ? 44 : 52, weight: .bold))
+                    .font(.system(size: 44, weight: .bold))
                     .foregroundStyle(CampusTheme.success)
             }
     }

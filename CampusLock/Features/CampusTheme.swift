@@ -6,12 +6,40 @@ enum CampusTheme {
     static let elevated = Color(.secondarySystemGroupedBackground)
     static let accent = Color.blue
     static let success = Color.green
-    static let screenHorizontalPadding: CGFloat = 20
-    static let screenTopPadding: CGFloat = 14
-    static let screenSpacing: CGFloat = 14
+    static let screenHorizontalPadding: CGFloat = 18
+    static let screenTopPadding: CGFloat = 22
+    static let screenSpacing: CGFloat = 16
+    static let contentMaxWidth: CGFloat = 430
 
     static func scrollBottomPadding(hasAction: Bool = true) -> CGFloat {
-        hasAction ? 18 : 24
+        hasAction ? 24 : 28
+    }
+}
+
+struct CampusScreen<Content: View>: View {
+    private let alignment: HorizontalAlignment
+    private let content: Content
+
+    init(alignment: HorizontalAlignment = .leading, @ViewBuilder content: () -> Content) {
+        self.alignment = alignment
+        self.content = content()
+    }
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: alignment, spacing: CampusTheme.screenSpacing) {
+                content
+            }
+            .frame(maxWidth: CampusTheme.contentMaxWidth, alignment: Alignment(horizontal: alignment, vertical: .top))
+            .frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .top))
+            .padding(.horizontal, CampusTheme.screenHorizontalPadding)
+            .padding(.top, CampusTheme.screenTopPadding)
+            .padding(.bottom, CampusTheme.scrollBottomPadding())
+            .campusLoadIn()
+        }
+        .contentMargins(.top, 0, for: .scrollContent)
+        .scrollDismissesKeyboard(.interactively)
+        .background(CampusTheme.background)
     }
 }
 
@@ -35,20 +63,20 @@ struct CampusScreenHeader: View {
     var symbol: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             Image(systemName: symbol)
-                .font(.subheadline.weight(.semibold))
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(CampusTheme.accent)
-                .frame(width: 36, height: 36)
+                .frame(width: 34, height: 34)
                 .background(CampusTheme.accent.opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.title2.weight(.semibold))
+                    .font(.title3.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
                 Text(subtitle)
-                    .font(.subheadline)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -69,9 +97,14 @@ struct CampusBottomBar<Content: View>: View {
         content
             .frame(maxWidth: .infinity)
             .padding(.horizontal, CampusTheme.screenHorizontalPadding)
-            .padding(.top, 10)
-            .padding(.bottom, 8)
-            .background(.regularMaterial)
+            .padding(.top, 12)
+            .padding(.bottom, 10)
+            .background(.bar)
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(Color(.separator).opacity(0.18))
+                    .frame(height: 0.5)
+            }
     }
 }
 
@@ -80,10 +113,12 @@ struct CampusPrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .frame(height: 54)
             .foregroundStyle(Color(.systemBackground))
             .background(Color.primary.opacity(configuration.isPressed ? 0.82 : 1), in: Capsule())
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
             .contentShape(Capsule())
+            .animation(.snappy(duration: 0.16), value: configuration.isPressed)
     }
 }
 
@@ -92,14 +127,16 @@ struct CampusSecondaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .frame(height: 54)
             .foregroundStyle(.primary)
             .background(Color(.tertiarySystemGroupedBackground), in: Capsule())
             .overlay {
                 Capsule().stroke(Color(.separator), lineWidth: 0.5)
             }
             .opacity(configuration.isPressed ? 0.75 : 1)
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
             .contentShape(Capsule())
+            .animation(.snappy(duration: 0.16), value: configuration.isPressed)
     }
 }
 

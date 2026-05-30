@@ -8,66 +8,69 @@ struct ZoneView: View {
 
     var body: some View {
         @Bindable var store = store
-        GeometryReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: CampusTheme.screenSpacing) {
-                    CampusScreenHeader(
-                        title: "Zone",
-                        subtitle: "Draw the classroom radius around your current location.",
-                        symbol: "location"
-                    )
-                    ZoneMapCard(
-                        center: store.state.zone.center,
-                        radius: store.state.zone.radiusMeters,
-                        height: mapHeight(for: proxy.size.height)
-                    )
-                    VStack(alignment: .leading, spacing: 14) {
-                        Text("Radius")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text("\(Int(store.state.zone.radiusMeters)) meters")
-                            .font(.title2.weight(.semibold))
-                        Slider(
-                            value: Binding(
-                                get: { store.state.zone.radiusMeters },
-                                set: { store.updateRadius($0) }
-                            ),
-                            in: 50...500,
-                            step: 10
-                        )
-                        .accessibilityIdentifier("zone.radius")
-                    }
-                    .campusCard()
-                }
-                .padding(.horizontal, CampusTheme.screenHorizontalPadding)
-                .padding(.top, CampusTheme.screenTopPadding)
-                .padding(.bottom, CampusTheme.scrollBottomPadding())
-                .campusLoadIn()
+        CampusScreen {
+            CampusScreenHeader(
+                title: "Zone",
+                subtitle: "Draw the classroom radius around your current location.",
+                symbol: "location"
+            )
+            ZoneMapCard(
+                center: store.state.zone.center,
+                radius: store.state.zone.radiusMeters
+            )
+            radiusCard
+        }
+        .campusFixedAction {
+            Button {
+                didEnableZone.toggle()
+                store.startFocus()
+                store.selectedTab = .lock
+            } label: {
+                Label("Enable Zone", systemImage: "location.fill")
             }
-            .background(CampusTheme.background)
-            .campusFixedAction {
-                Button("Enable Zone") {
-                    didEnableZone.toggle()
-                    store.startFocus()
-                    store.selectedTab = .lock
-                }
-                .buttonStyle(CampusPrimaryButtonStyle())
-                .accessibilityIdentifier("zone.enable")
-            }
+            .buttonStyle(CampusPrimaryButtonStyle())
+            .accessibilityIdentifier("zone.enable")
         }
         .sensoryFeedback(.selection, trigger: Int(store.state.zone.radiusMeters))
         .sensoryFeedback(.success, trigger: didEnableZone)
     }
 
-    private func mapHeight(for screenHeight: CGFloat) -> CGFloat {
-        min(330, max(230, screenHeight * 0.38))
+    private var radiusCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Radius")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(Int(store.state.zone.radiusMeters)) m")
+                    .font(.title3.weight(.semibold))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+            }
+            Slider(
+                value: Binding(
+                    get: { store.state.zone.radiusMeters },
+                    set: { store.updateRadius($0) }
+                ),
+                in: 50...500,
+                step: 10
+            )
+            .accessibilityIdentifier("zone.radius")
+            HStack {
+                Text("50 m")
+                Spacer()
+                Text("500 m")
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+        }
+        .campusCard()
     }
 }
 
 private struct ZoneMapCard: View {
     var center: Coordinate
     var radius: Double
-    var height: CGFloat
     @State private var cameraPosition: MapCameraPosition = .automatic
 
     var body: some View {
@@ -97,7 +100,7 @@ private struct ZoneMapCard: View {
                 .padding(.bottom, 14)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: height)
+        .frame(height: 292)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 28, style: .continuous)

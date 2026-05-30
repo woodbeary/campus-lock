@@ -7,33 +7,26 @@ struct InsightsView: View {
     @State private var isPreparingExport = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CampusTheme.screenSpacing) {
-                CampusScreenHeader(
-                    title: "Stats",
-                    subtitle: "Founder-ready attendance and focus signals.",
-                    symbol: "clock"
-                )
-                HStack(spacing: 12) {
-                    MetricTile(value: "\(Int(store.metrics.attendanceRate * 100))%", label: "present")
-                    MetricTile(value: "\(Int(store.metrics.averagePassingSeconds / 60))m", label: "avg pass")
-                    MetricTile(value: String(format: "%.1fh", store.metrics.lockedSeconds / 3600), label: "locked")
-                }
-                WeeklyChart()
-                    .campusCard()
-                InsightCard(title: "Signal", value: "Long passing periods", detail: "Average is up 38 sec this week.")
-                InsightCard(title: "Export", value: "Attendance · focus · zones", detail: "CSV stays local until shared.")
+        CampusScreen {
+            CampusScreenHeader(
+                title: "Stats",
+                subtitle: "Founder-ready attendance and focus signals.",
+                symbol: "clock"
+            )
+            HStack(spacing: 10) {
+                MetricTile(value: "\(Int(store.metrics.attendanceRate * 100))%", label: "present")
+                MetricTile(value: "\(Int(store.metrics.averagePassingSeconds / 60))m", label: "avg pass")
+                MetricTile(value: String(format: "%.1fh", store.metrics.lockedSeconds / 3600), label: "locked")
             }
-            .padding(.horizontal, CampusTheme.screenHorizontalPadding)
-            .padding(.top, CampusTheme.screenTopPadding)
-            .padding(.bottom, CampusTheme.scrollBottomPadding())
-            .campusLoadIn()
+            WeeklyChart()
+                .campusCard()
+            InsightCard(title: "Signal", value: "Long passing periods", detail: "Average is up 38 sec this week.")
+            InsightCard(title: "Export", value: "Attendance · focus · zones", detail: "CSV stays local until shared.")
         }
-        .background(CampusTheme.background)
         .campusFixedAction {
             if let exportURL, !isPreparingExport {
                 ShareLink(item: exportURL) {
-                    Text("Share CSV")
+                    Label("Share CSV", systemImage: "square.and.arrow.up")
                 }
                 .buttonStyle(CampusPrimaryButtonStyle())
             } else {
@@ -54,7 +47,7 @@ struct InsightsView: View {
                                 .controlSize(.small)
                                 .tint(Color(.systemBackground))
                         }
-                        Text(isPreparingExport ? "Preparing" : "Prepare CSV")
+                        Label(isPreparingExport ? "Preparing" : "Prepare CSV", systemImage: isPreparingExport ? "hourglass" : "doc.badge.arrow.up")
                     }
                 }
                 .buttonStyle(CampusPrimaryButtonStyle())
@@ -83,6 +76,7 @@ private struct MetricTile: View {
             Text(value)
                 .font(.title2.weight(.semibold))
                 .monospacedDigit()
+                .contentTransition(.numericText())
                 .lineLimit(1)
                 .minimumScaleFactor(0.74)
             Text(label)
@@ -91,7 +85,7 @@ private struct MetricTile: View {
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .campusCard()
+        .campusCard(padding: 14)
     }
 }
 
@@ -103,15 +97,15 @@ private struct WeeklyChart: View {
             Text("Week")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            HStack(alignment: .bottom, spacing: 16) {
+            HStack(alignment: .bottom, spacing: 14) {
                 ForEach(Array(values.enumerated()), id: \.offset) { index, value in
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(index < 5 ? CampusTheme.accent : Color(.systemGray5))
-                        .frame(height: 160 * value)
+                        .frame(height: 132 * value)
                         .frame(maxWidth: .infinity)
                 }
             }
-            .frame(height: 180)
+            .frame(height: 148)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Weekly focus chart")
         }
