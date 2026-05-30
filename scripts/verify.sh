@@ -63,7 +63,7 @@ PY
   done < <(echo "$js_gate_files" | grep '/tsconfig.json$' || true)
 fi
 
-echo "== Native UI layout guard =="
+echo "== UI layout guard =="
 ./scripts/verify-ui-layout.sh
 
 echo "== Release tooling lint =="

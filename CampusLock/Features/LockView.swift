@@ -25,7 +25,6 @@ private struct ReadyView: View {
         CampusScreen {
             header
             readyCard
-            statusBlock
             metricsRow
         }
         .campusFixedAction {
@@ -44,7 +43,12 @@ private struct ReadyView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: 14) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(CampusTheme.accent)
+                .frame(width: 40, height: 40)
+                .background(CampusTheme.accent.opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 4) {
                 Text(store.state.selectedClass.title)
                     .font(.title2.weight(.semibold))
@@ -64,57 +68,75 @@ private struct ReadyView: View {
                 .background(CampusTheme.accent.opacity(0.14), in: Capsule())
         }
         .frame(maxWidth: .infinity)
-        .campusCard(padding: 16)
+        .campusCard(padding: 14)
     }
 
     private var readyCard: some View {
-        VStack(spacing: 14) {
-            ZStack {
-                ForEach([132.0, 98.0, 68.0], id: \.self) { size in
-                    Circle()
-                        .stroke(CampusTheme.accent.opacity(size < 90 ? 0.95 : 0.14), lineWidth: size < 90 ? 3 : 7)
-                        .frame(width: size, height: size)
+        VStack(alignment: .leading, spacing: 18) {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 18) {
+                    readyGlyph
+                    readyCopy
                 }
 
-                Image(systemName: "location.north.circle.fill")
-                    .font(.system(size: 40, weight: .semibold))
-                    .foregroundStyle(CampusTheme.accent)
+                VStack(alignment: .leading, spacing: 14) {
+                    readyGlyph
+                    readyCopy
+                }
             }
-            .frame(height: 140)
 
-            VStack(spacing: 4) {
-                Text("Ready")
-                    .font(.title.weight(.semibold))
-                    .lineLimit(1)
-                Text("Tap in at the door to mark attendance and lock selected apps.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            statusPill
         }
         .frame(maxWidth: .infinity)
         .campusCard(padding: 18)
     }
 
-    private var statusBlock: some View {
+    private var readyGlyph: some View {
+        ZStack {
+            ForEach([112.0, 82.0, 54.0], id: \.self) { size in
+                Circle()
+                    .stroke(CampusTheme.accent.opacity(size < 60 ? 0.9 : 0.14), lineWidth: size < 60 ? 3 : 7)
+                    .frame(width: size, height: size)
+            }
+
+            Image(systemName: "location.north.circle.fill")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(CampusTheme.accent)
+        }
+        .frame(width: 118, height: 118)
+    }
+
+    private var readyCopy: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Ready")
+                .font(.largeTitle.weight(.semibold))
+                .lineLimit(1)
+            Text("Tap in at the door. Attendance is marked and selected apps lock.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var statusPill: some View {
         HStack(spacing: 12) {
             Image(systemName: store.hasShieldSelection ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
-                .font(.headline.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(store.hasShieldSelection ? CampusTheme.success : CampusTheme.accent)
-                .frame(width: 36, height: 36)
+                .frame(width: 30, height: 30)
                 .background((store.hasShieldSelection ? CampusTheme.success : CampusTheme.accent).opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 3) {
                 Text(store.hasShieldSelection ? "Focus + attendance" : "Choose apps first")
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                 Text(store.hasShieldSelection ? "Tap once at the classroom door." : "Pick apps before the first lock.")
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
             Spacer(minLength: 0)
         }
-        .campusCard(padding: 14)
+        .padding(12)
+        .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private var metricsRow: some View {

@@ -171,7 +171,7 @@ enum PermissionStatus: Equatable {
     }
 }
 
-enum AppTab: Hashable {
+enum AppTab: Hashable, CaseIterable {
     case lock
     case apps
     case zone

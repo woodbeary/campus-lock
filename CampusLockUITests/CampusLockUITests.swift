@@ -60,11 +60,12 @@ final class CampusLockUITests: XCTestCase {
     }
 
     private func assertFooterTabsStayReachable(_ app: XCUIApplication) {
+        XCTAssertTrue(app.otherElements["footer.menu"].waitForExistence(timeout: 5), "fixed footer menu should exist")
         for tabLabel in ["Lock", "Apps", "Zone", "Stats", "Attend"] {
             let tab = tabButton(tabLabel, app: app)
             XCTAssertTrue(tab.waitForExistence(timeout: 5), "\(tabLabel) tab should exist")
             XCTAssertTrue(tab.isHittable, "\(tabLabel) tab should be hittable")
-            XCTAssertGreaterThan(tab.frame.midY, app.frame.midY, "\(tabLabel) should stay in the native footer area")
+            XCTAssertGreaterThan(tab.frame.midY, app.frame.midY, "\(tabLabel) should stay in the fixed footer area")
             XCTAssertLessThanOrEqual(tab.frame.maxY, app.frame.maxY, "\(tabLabel) should not be cropped below the screen")
         }
     }
@@ -82,6 +83,19 @@ final class CampusLockUITests: XCTestCase {
     }
 
     private func tabButton(_ label: String, app: XCUIApplication) -> XCUIElement {
-        app.tabBars.buttons[label]
+        switch label {
+        case "Lock":
+            app.buttons["tab.lock"]
+        case "Apps":
+            app.buttons["tab.apps"]
+        case "Zone":
+            app.buttons["tab.zone"]
+        case "Stats":
+            app.buttons["tab.stats"]
+        case "Attend":
+            app.buttons["tab.attendance"]
+        default:
+            app.buttons[label]
+        }
     }
 }

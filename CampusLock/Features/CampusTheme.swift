@@ -6,13 +6,13 @@ enum CampusTheme {
     static let elevated = Color(.secondarySystemGroupedBackground)
     static let accent = Color.blue
     static let success = Color.green
-    static let screenHorizontalPadding: CGFloat = 18
-    static let screenTopPadding: CGFloat = 22
-    static let screenSpacing: CGFloat = 16
+    static let screenHorizontalPadding: CGFloat = 20
+    static let screenTopPadding: CGFloat = 18
+    static let screenSpacing: CGFloat = 18
     static let contentMaxWidth: CGFloat = 430
 
     static func scrollBottomPadding(hasAction: Bool = true) -> CGFloat {
-        hasAction ? 24 : 28
+        hasAction ? 18 : 28
     }
 }
 
@@ -95,9 +95,10 @@ struct CampusBottomBar<Content: View>: View {
 
     var body: some View {
         content
+            .frame(maxWidth: CampusTheme.contentMaxWidth)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, CampusTheme.screenHorizontalPadding)
-            .padding(.top, 12)
+            .padding(.top, 10)
             .padding(.bottom, 10)
             .background(.bar)
             .overlay(alignment: .top) {

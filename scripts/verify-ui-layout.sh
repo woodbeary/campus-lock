@@ -35,10 +35,12 @@ reject_pattern() {
   fi
 }
 
-echo "== Native tab footer =="
-require_pattern "CampusLock/Features/RootView.swift" "TabView\\(selection:" "Root uses native TabView selection."
-require_pattern "CampusLock/Features/RootView.swift" "toolbarBackground\\(\\.visible, for: \\.tabBar\\)" "Tab footer is forced visible."
-require_pattern "CampusLock/App/CampusLockApp.swift" "UITabBarAppearance" "Native tab bar appearance is configured."
+echo "== Fixed footer menu =="
+require_pattern "CampusLock/Features/RootView.swift" "struct CampusFooterMenu" "Root defines a fixed bottom footer menu."
+require_pattern "CampusLock/Features/RootView.swift" "safeAreaInset\\(edge: \\.bottom" "Root reserves safe area for the footer."
+require_pattern "CampusLock/Features/RootView.swift" "accessibilityIdentifier\\(\"footer.menu\"\\)" "Footer has a stable accessibility identifier."
+require_pattern "CampusLock/Features/RootView.swift" "accessibilityIdentifier\\(\"tab" "Footer tabs have stable accessibility identifiers."
+reject_pattern "CampusLock/Features/RootView.swift" "TabView\\(" "Root avoids fragile tab-bar cropping."
 
 echo "== Fixed action shell =="
 require_pattern "CampusLock/Features/CampusTheme.swift" "struct CampusScreen<Content: View>" "Shared scroll shell exists."
@@ -55,6 +57,7 @@ require_pattern "CampusLock/Features/LockView.swift" "CampusScreen \\{" "Lock re
 echo "== UI regression tests =="
 require_pattern "CampusLockUITests/CampusLockUITests.swift" "testSetupScreenKeepsFooterAndFixedAction" "Setup footer/action regression test exists."
 require_pattern "CampusLockUITests/CampusLockUITests.swift" "assertFooterTabsStayReachable" "Footer reachability assertion exists."
+require_pattern "CampusLockUITests/CampusLockUITests.swift" "footer.menu" "Fixed footer menu assertion exists."
 require_pattern "CampusLockUITests/CampusLockUITests.swift" "assertActionSitsAboveFooter" "Fixed action placement assertion exists."
 require_pattern "CampusLockUITests/CampusLockUITests.swift" "should not be cropped" "Crop guard assertions exist."
 

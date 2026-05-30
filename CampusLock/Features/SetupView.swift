@@ -29,24 +29,34 @@ struct SetupView: View {
     }
 
     private var permissionRows: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 0) {
             SetupRow(title: "Screen Time", subtitle: store.authorizationStatus.label, symbol: "lock", isReady: store.authorizationStatus.isUsable)
+            CampusDivider()
             SetupRow(title: "Apps", subtitle: appsSubtitle, symbol: "square.grid.3x3", isReady: store.hasShieldSelection)
+            CampusDivider()
             SetupRow(title: "Location", subtitle: store.locationStatus.label, symbol: "location", isReady: store.locationStatus.isUsable)
+            CampusDivider()
             SetupRow(title: "Attendance", subtitle: "Local check-ins", symbol: "lanyardcard", isReady: true)
         }
+        .campusCard(padding: 0)
     }
 
     private var mvpRule: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Flow")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text("Tap in. Lock apps. Walk out.")
-                .font(.headline.weight(.semibold))
-            Text("One founder demo surface, no admin/student split.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            Image(systemName: "figure.walk.circle")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(CampusTheme.accent)
+                .frame(width: 42, height: 42)
+                .background(CampusTheme.accent.opacity(0.12), in: Circle())
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Tap in. Lock apps. Walk out.")
+                    .font(.headline.weight(.semibold))
+                    .lineLimit(2)
+                Text("One founder demo surface.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .campusCard(padding: 14)
@@ -89,9 +99,9 @@ private struct SetupRow: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
-                .font(.title3.weight(.semibold))
+                .font(.headline.weight(.semibold))
                 .foregroundStyle(CampusTheme.accent)
-                .frame(width: 44, height: 44)
+                .frame(width: 38, height: 38)
                 .background(CampusTheme.accent.opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
@@ -105,6 +115,14 @@ private struct SetupRow: View {
                 .font(.headline)
                 .foregroundStyle(isReady ? CampusTheme.success : .secondary)
         }
-        .campusCard(padding: 14)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+    }
+}
+
+private struct CampusDivider: View {
+    var body: some View {
+        Divider()
+            .padding(.leading, 66)
     }
 }
