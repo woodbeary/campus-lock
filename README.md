@@ -41,6 +41,14 @@ To run the read-only App Store Connect signing readiness check:
 
 This verifies the three bundle IDs, Family Controls capabilities, distribution certificate, and registered iPhone without creating profiles.
 
+To verify the latest packaged registered-device IPA:
+
+```sh
+./scripts/verify-ipa-artifact.sh
+```
+
+This checks the app plus both shield extension embedded profiles, Family Controls entitlements, registered device inclusion, code signatures, and SHA-256 hash.
+
 To smoke-test the latest installed registered-device build:
 
 ```sh
