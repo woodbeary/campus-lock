@@ -3,6 +3,18 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+minimum_verify_free_gb="${MINIMUM_VERIFY_FREE_GB:-1}"
+
+echo "== Verify disk space =="
+free_kb="$(df -Pk . | awk 'NR==2 {print $4}')"
+free_gb="$((free_kb / 1024 / 1024))"
+if (( free_gb < minimum_verify_free_gb )); then
+  echo "Free disk is ${free_gb} GiB; need at least ${minimum_verify_free_gb} GiB for local verification."
+  echo "Run ./scripts/disk-unblock-audit.sh for read-only cleanup candidates."
+  exit 1
+fi
+echo "Free disk: ${free_gb} GiB"
+
 echo "== Swift package tests with coverage =="
 ./scripts/test-coverage.sh
 
