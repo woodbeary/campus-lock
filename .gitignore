@@ -1,0 +1,23 @@
+# Local context dumps and recovered private assets
+docs/
+docs_text/
+whatsapp_exports/
+tmp/
+jacob_screentime_personal_notes.txt
+screentime_transcript.txt
+
+# macOS / Xcode / Swift local artifacts
+.DS_Store
+DerivedData/
+*.xcuserstate
+*.xcuserdata/
+*.moved-aside
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Dependency/build caches
+.build/
+.swiftpm/
+.cache/
+node_modules/
