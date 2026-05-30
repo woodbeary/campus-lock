@@ -9,6 +9,7 @@ screentime_transcript.txt
 # macOS / Xcode / Swift local artifacts
 .DS_Store
 DerivedData/
+build/
 *.xcuserstate
 *.xcuserdata/
 *.moved-aside

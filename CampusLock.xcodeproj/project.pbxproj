@@ -1,0 +1,616 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		103473D29C6A6E3F68F8D782 /* CampusLockApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED277027D9ED0AFC979D79B1 /* CampusLockApp.swift */; };
+		1126CEFB204A714DED19BE7B /* LocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267E60CC9CDFFEC0DD5320F0 /* LocationController.swift */; };
+		11AB2754EF899A59B9A6ABB4 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9DCCF066C4D1C542ED466A /* SetupView.swift */; };
+		1463C1F121A4DE74AAA04D4C /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3101803EC9524B155359A61D /* InsightsView.swift */; };
+		1484568783D0CAE46BC4A20D /* CampusLockStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC6902DBBA75480861798A3 /* CampusLockStore.swift */; };
+		208059ED98556A2C65B95782 /* CampusLockCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */; };
+		21BB804A0CFA9E13C43773D4 /* CampusLockCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		26243673C0194C653B6C2FDE /* CampusLockSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18853531BF079B3697D5466D /* CampusLockSmokeTests.swift */; };
+		33CAEF30BC2BE641F2C02D0E /* ZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 714E7E0CDEC37CC2B7C063B9 /* ZoneView.swift */; };
+		4F549B5DD6EBBBF1A61FBE9E /* AppsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F50021C9C6ACEEB4D1C210 /* AppsView.swift */; };
+		5CBDA98FA80DBF076CA0A520 /* AttendanceExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C47FB60931AC0F33EB4C7AF /* AttendanceExporterTests.swift */; };
+		5D3AD0C9B0D6AD9191E51F55 /* CampusLockCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */; };
+		68F6D61B504D0F08C94821EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F16C9A2E67B688EB2A80FCE9 /* Assets.xcassets */; };
+		6E95DD756C1FE5F8AD6F3E10 /* CampusLockCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		82FC53C0E7BD1FBBF1E142D2 /* LockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26C1019BC3C017DBDCD4713B /* LockView.swift */; };
+		9E67B7D5C9E4FC0524DB6151 /* CampusLockReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CED9649C8FF37353C14F24F /* CampusLockReducer.swift */; };
+		B31EB91455A8C1A942C52E75 /* CampusLockAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C72D4C4356280F6C1B77F8 /* CampusLockAnalytics.swift */; };
+		B43E490EA1F28A35AE61846F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18EFBA3B0362A9272ED28307 /* RootView.swift */; };
+		BCD2E78CB656E334418304CF /* CampusLockModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390CECC6740FCA8AEBA48449 /* CampusLockModels.swift */; };
+		BEC11AA6FE6E476479140A69 /* AttendanceExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ABCB671E50A505E13DD6684 /* AttendanceExporter.swift */; };
+		C7B63F44E146A6BEA922742F /* AttendanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6191207A9A5505CD07477BE5 /* AttendanceView.swift */; };
+		C8E5FEE63F8811B25D54B3CD /* CampusLockUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877C939408154B9E3E4A70D6 /* CampusLockUITests.swift */; };
+		E3E78B532361DDF4FB7EB17B /* CampusLockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3BA9BCFE68092B9C1CD4F7 /* CampusLockRepository.swift */; };
+		F329C615E2543787FDAC6E0D /* ScreenTimeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6B190C7D433828D64863CBD /* ScreenTimeController.swift */; };
+		FC6524D2DEDC7570219AD89A /* CampusTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDA2CB48D9F077EEF6742BF /* CampusTheme.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		48DCCA657DAD819E24B0565D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F4ED520A61927CE8D10EE2D4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2887FF8F1002050B3017F5D5;
+			remoteInfo = CampusLockCore;
+		};
+		B32871DE3FE3270FA8E0D298 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F4ED520A61927CE8D10EE2D4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2EE865F2242CA2E8252FAD82;
+			remoteInfo = CampusLock;
+		};
+		CF3DE2A052464727FF2B7B2E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F4ED520A61927CE8D10EE2D4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2887FF8F1002050B3017F5D5;
+			remoteInfo = CampusLockCore;
+		};
+		E824D2EB232D824F0D8EECE2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F4ED520A61927CE8D10EE2D4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2EE865F2242CA2E8252FAD82;
+			remoteInfo = CampusLock;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		ADEC9B448B40E9A7547B2D15 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				21BB804A0CFA9E13C43773D4 /* CampusLockCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE2DBC33D72273D88AC901D1 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				6E95DD756C1FE5F8AD6F3E10 /* CampusLockCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0C47FB60931AC0F33EB4C7AF /* AttendanceExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceExporterTests.swift; sourceTree = "<group>"; };
+		0E3BA9BCFE68092B9C1CD4F7 /* CampusLockRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockRepository.swift; sourceTree = "<group>"; };
+		0EDA2CB48D9F077EEF6742BF /* CampusTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusTheme.swift; sourceTree = "<group>"; };
+		18853531BF079B3697D5466D /* CampusLockSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockSmokeTests.swift; sourceTree = "<group>"; };
+		18EFBA3B0362A9272ED28307 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		267E60CC9CDFFEC0DD5320F0 /* LocationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationController.swift; sourceTree = "<group>"; };
+		26C1019BC3C017DBDCD4713B /* LockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockView.swift; sourceTree = "<group>"; };
+		3101803EC9524B155359A61D /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		390CECC6740FCA8AEBA48449 /* CampusLockModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockModels.swift; sourceTree = "<group>"; };
+		3CED9649C8FF37353C14F24F /* CampusLockReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockReducer.swift; sourceTree = "<group>"; };
+		4ABCB671E50A505E13DD6684 /* AttendanceExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceExporter.swift; sourceTree = "<group>"; };
+		4B9DCCF066C4D1C542ED466A /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
+		4D44FF7D785D00438923CD32 /* CampusLock.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CampusLock.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F6B1B067250704DEA92A15F /* CampusLockTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CampusLockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		581EC40A20068431E930450B /* CampusLock.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CampusLock.entitlements; sourceTree = "<group>"; };
+		6191207A9A5505CD07477BE5 /* AttendanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceView.swift; sourceTree = "<group>"; };
+		714E7E0CDEC37CC2B7C063B9 /* ZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneView.swift; sourceTree = "<group>"; };
+		877C939408154B9E3E4A70D6 /* CampusLockUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockUITests.swift; sourceTree = "<group>"; };
+		A5F50021C9C6ACEEB4D1C210 /* AppsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsView.swift; sourceTree = "<group>"; };
+		B45A711123DF4E1E8AF2A31D /* CampusLockUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CampusLockUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7DD94EA7BBBCEAD40B66F80 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		BEC6902DBBA75480861798A3 /* CampusLockStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockStore.swift; sourceTree = "<group>"; };
+		BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CampusLockCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6B190C7D433828D64863CBD /* ScreenTimeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenTimeController.swift; sourceTree = "<group>"; };
+		E5C72D4C4356280F6C1B77F8 /* CampusLockAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockAnalytics.swift; sourceTree = "<group>"; };
+		ED277027D9ED0AFC979D79B1 /* CampusLockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockApp.swift; sourceTree = "<group>"; };
+		F16C9A2E67B688EB2A80FCE9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		14875BFACED72D3D172CAD52 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D3AD0C9B0D6AD9191E51F55 /* CampusLockCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5DACAF5D77F17AF7CBD3542F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				208059ED98556A2C65B95782 /* CampusLockCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0E532186ACEE08F63FD74E88 /* CampusLockCore */ = {
+			isa = PBXGroup;
+			children = (
+				E5C72D4C4356280F6C1B77F8 /* CampusLockAnalytics.swift */,
+				390CECC6740FCA8AEBA48449 /* CampusLockModels.swift */,
+				3CED9649C8FF37353C14F24F /* CampusLockReducer.swift */,
+			);
+			name = CampusLockCore;
+			path = Sources/CampusLockCore;
+			sourceTree = "<group>";
+		};
+		1A2F857C20C501CA66840689 /* CampusLockTests */ = {
+			isa = PBXGroup;
+			children = (
+				0C47FB60931AC0F33EB4C7AF /* AttendanceExporterTests.swift */,
+				18853531BF079B3697D5466D /* CampusLockSmokeTests.swift */,
+			);
+			path = CampusLockTests;
+			sourceTree = "<group>";
+		};
+		401FDA7F5D5D9EB8E3808FD6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F16C9A2E67B688EB2A80FCE9 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		5303B41184FF3FC1D7C54393 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				A5F50021C9C6ACEEB4D1C210 /* AppsView.swift */,
+				6191207A9A5505CD07477BE5 /* AttendanceView.swift */,
+				0EDA2CB48D9F077EEF6742BF /* CampusTheme.swift */,
+				3101803EC9524B155359A61D /* InsightsView.swift */,
+				26C1019BC3C017DBDCD4713B /* LockView.swift */,
+				18EFBA3B0362A9272ED28307 /* RootView.swift */,
+				4B9DCCF066C4D1C542ED466A /* SetupView.swift */,
+				714E7E0CDEC37CC2B7C063B9 /* ZoneView.swift */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		74BFAF43AE041CD9E0589884 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				ED277027D9ED0AFC979D79B1 /* CampusLockApp.swift */,
+				BEC6902DBBA75480861798A3 /* CampusLockStore.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A8714FB8CE08DA88308712DB /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				4ABCB671E50A505E13DD6684 /* AttendanceExporter.swift */,
+				0E3BA9BCFE68092B9C1CD4F7 /* CampusLockRepository.swift */,
+				267E60CC9CDFFEC0DD5320F0 /* LocationController.swift */,
+				D6B190C7D433828D64863CBD /* ScreenTimeController.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		ADA506781238D23E5C6EA47E = {
+			isa = PBXGroup;
+			children = (
+				F82A5F2395159D786C7225A1 /* CampusLock */,
+				0E532186ACEE08F63FD74E88 /* CampusLockCore */,
+				1A2F857C20C501CA66840689 /* CampusLockTests */,
+				D2D10A0EC7D5D9C216FC67ED /* CampusLockUITests */,
+				FFF048E8649FA446E6AF1E7E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D2D10A0EC7D5D9C216FC67ED /* CampusLockUITests */ = {
+			isa = PBXGroup;
+			children = (
+				877C939408154B9E3E4A70D6 /* CampusLockUITests.swift */,
+			);
+			path = CampusLockUITests;
+			sourceTree = "<group>";
+		};
+		F82A5F2395159D786C7225A1 /* CampusLock */ = {
+			isa = PBXGroup;
+			children = (
+				581EC40A20068431E930450B /* CampusLock.entitlements */,
+				B7DD94EA7BBBCEAD40B66F80 /* Info.plist */,
+				74BFAF43AE041CD9E0589884 /* App */,
+				5303B41184FF3FC1D7C54393 /* Features */,
+				401FDA7F5D5D9EB8E3808FD6 /* Resources */,
+				A8714FB8CE08DA88308712DB /* Services */,
+			);
+			path = CampusLock;
+			sourceTree = "<group>";
+		};
+		FFF048E8649FA446E6AF1E7E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4D44FF7D785D00438923CD32 /* CampusLock.app */,
+				BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */,
+				4F6B1B067250704DEA92A15F /* CampusLockTests.xctest */,
+				B45A711123DF4E1E8AF2A31D /* CampusLockUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1F1D276945484CFA5EF4AECC /* CampusLockUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 81E845CCD079C44365EAEF27 /* Build configuration list for PBXNativeTarget "CampusLockUITests" */;
+			buildPhases = (
+				A4872C4EFAD295E677FD6626 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C8A6A4BFDCE9C18F77A03569 /* PBXTargetDependency */,
+			);
+			name = CampusLockUITests;
+			packageProductDependencies = (
+			);
+			productName = CampusLockUITests;
+			productReference = B45A711123DF4E1E8AF2A31D /* CampusLockUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		2887FF8F1002050B3017F5D5 /* CampusLockCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 985FE2C8510B1FE0204FEDEF /* Build configuration list for PBXNativeTarget "CampusLockCore" */;
+			buildPhases = (
+				A8F0E6C73A298AF77C842E31 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CampusLockCore;
+			packageProductDependencies = (
+			);
+			productName = CampusLockCore;
+			productReference = BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		2EE865F2242CA2E8252FAD82 /* CampusLock */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB8E15DCE973A1C4161AFDC8 /* Build configuration list for PBXNativeTarget "CampusLock" */;
+			buildPhases = (
+				5F3C2034AD96E4AD187C7E88 /* Sources */,
+				5572D0FA7E2DE2186C1C5251 /* Resources */,
+				5DACAF5D77F17AF7CBD3542F /* Frameworks */,
+				ADEC9B448B40E9A7547B2D15 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F585CA93AFF1A5A44E850054 /* PBXTargetDependency */,
+			);
+			name = CampusLock;
+			packageProductDependencies = (
+			);
+			productName = CampusLock;
+			productReference = 4D44FF7D785D00438923CD32 /* CampusLock.app */;
+			productType = "com.apple.product-type.application";
+		};
+		3E5319EA806D89AD0DC7CC3D /* CampusLockTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2ADBF7765B368F03C84CB063 /* Build configuration list for PBXNativeTarget "CampusLockTests" */;
+			buildPhases = (
+				C7CFBCC3B075E578B50DF839 /* Sources */,
+				14875BFACED72D3D172CAD52 /* Frameworks */,
+				FE2DBC33D72273D88AC901D1 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				604C3E893A2ADA7A3CA5CD52 /* PBXTargetDependency */,
+				012784FB6730A61750F3B08F /* PBXTargetDependency */,
+			);
+			name = CampusLockTests;
+			packageProductDependencies = (
+			);
+			productName = CampusLockTests;
+			productReference = 4F6B1B067250704DEA92A15F /* CampusLockTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F4ED520A61927CE8D10EE2D4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					1F1D276945484CFA5EF4AECC = {
+						DevelopmentTeam = YOUR_TEAM_ID;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 2EE865F2242CA2E8252FAD82;
+					};
+					2887FF8F1002050B3017F5D5 = {
+						DevelopmentTeam = YOUR_TEAM_ID;
+						ProvisioningStyle = Automatic;
+					};
+					2EE865F2242CA2E8252FAD82 = {
+						DevelopmentTeam = YOUR_TEAM_ID;
+						ProvisioningStyle = Automatic;
+					};
+					3E5319EA806D89AD0DC7CC3D = {
+						DevelopmentTeam = YOUR_TEAM_ID;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C6187C34EF600B6060466DA1 /* Build configuration list for PBXProject "CampusLock" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = ADA506781238D23E5C6EA47E;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FFF048E8649FA446E6AF1E7E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2EE865F2242CA2E8252FAD82 /* CampusLock */,
+				2887FF8F1002050B3017F5D5 /* CampusLockCore */,
+				3E5319EA806D89AD0DC7CC3D /* CampusLockTests */,
+				1F1D276945484CFA5EF4AECC /* CampusLockUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5572D0FA7E2DE2186C1C5251 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68F6D61B504D0F08C94821EB /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5F3C2034AD96E4AD187C7E88 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F549B5DD6EBBBF1A61FBE9E /* AppsView.swift in Sources */,
+				BEC11AA6FE6E476479140A69 /* AttendanceExporter.swift in Sources */,
+				C7B63F44E146A6BEA922742F /* AttendanceView.swift in Sources */,
+				103473D29C6A6E3F68F8D782 /* CampusLockApp.swift in Sources */,
+				E3E78B532361DDF4FB7EB17B /* CampusLockRepository.swift in Sources */,
+				1484568783D0CAE46BC4A20D /* CampusLockStore.swift in Sources */,
+				FC6524D2DEDC7570219AD89A /* CampusTheme.swift in Sources */,
+				1463C1F121A4DE74AAA04D4C /* InsightsView.swift in Sources */,
+				1126CEFB204A714DED19BE7B /* LocationController.swift in Sources */,
+				82FC53C0E7BD1FBBF1E142D2 /* LockView.swift in Sources */,
+				B43E490EA1F28A35AE61846F /* RootView.swift in Sources */,
+				F329C615E2543787FDAC6E0D /* ScreenTimeController.swift in Sources */,
+				11AB2754EF899A59B9A6ABB4 /* SetupView.swift in Sources */,
+				33CAEF30BC2BE641F2C02D0E /* ZoneView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A4872C4EFAD295E677FD6626 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8E5FEE63F8811B25D54B3CD /* CampusLockUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A8F0E6C73A298AF77C842E31 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B31EB91455A8C1A942C52E75 /* CampusLockAnalytics.swift in Sources */,
+				BCD2E78CB656E334418304CF /* CampusLockModels.swift in Sources */,
+				9E67B7D5C9E4FC0524DB6151 /* CampusLockReducer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7CFBCC3B075E578B50DF839 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5CBDA98FA80DBF076CA0A520 /* AttendanceExporterTests.swift in Sources */,
+				26243673C0194C653B6C2FDE /* CampusLockSmokeTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		012784FB6730A61750F3B08F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2EE865F2242CA2E8252FAD82 /* CampusLock */;
+			targetProxy = B32871DE3FE3270FA8E0D298 /* PBXContainerItemProxy */;
+		};
+		604C3E893A2ADA7A3CA5CD52 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2887FF8F1002050B3017F5D5 /* CampusLockCore */;
+			targetProxy = 48DCCA657DAD819E24B0565D /* PBXContainerItemProxy */;
+		};
+		C8A6A4BFDCE9C18F77A03569 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2EE865F2242CA2E8252FAD82 /* CampusLock */;
+			targetProxy = E824D2EB232D824F0D8EECE2 /* PBXContainerItemProxy */;
+		};
+		F585CA93AFF1A5A44E850054 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2887FF8F1002050B3017F5D5 /* CampusLockCore */;
+			targetProxy = CF3DE2A052464727FF2B7B2E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		096237F669D8E962361FF715 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CampusLock/CampusLock.entitlements;
+				INFOPLIST_FILE = CampusLock/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.campuslock;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		338CDE60B357DCCB67E2D73B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.campuslock.uitests;
+				TEST_TARGET_NAME = CampusLock;
+			};
+			name = Release;
+		};
+		4235959177BA156B8DBB011E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.campuslock.tests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CampusLock.app/CampusLock";
+			};
+			name = Release;
+		};
+		6A61E7236EDE1662204C53E6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CampusLock/CampusLock.entitlements;
+				INFOPLIST_FILE = CampusLock/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.campuslock;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		75EE66D88CE961F3FF35C68A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.campuslock.tests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CampusLock.app/CampusLock";
+			};
+			name = Debug;
+		};
+		7CAA99BFEFB5BEC8D1DE3FB5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.CampusLockCore;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		A52782B43A0D7C7D427BC27D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		B958B82142181C91360ECD31 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.campuslock.uitests;
+				TEST_TARGET_NAME = CampusLock;
+			};
+			name = Debug;
+		};
+		CCCAD5B0B193D853A2191AC2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.woodbeary.CampusLockCore;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		E14F6C1E8FD08C48038E6D8A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2ADBF7765B368F03C84CB063 /* Build configuration list for PBXNativeTarget "CampusLockTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				75EE66D88CE961F3FF35C68A /* Debug */,
+				4235959177BA156B8DBB011E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		81E845CCD079C44365EAEF27 /* Build configuration list for PBXNativeTarget "CampusLockUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B958B82142181C91360ECD31 /* Debug */,
+				338CDE60B357DCCB67E2D73B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		985FE2C8510B1FE0204FEDEF /* Build configuration list for PBXNativeTarget "CampusLockCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CCCAD5B0B193D853A2191AC2 /* Debug */,
+				7CAA99BFEFB5BEC8D1DE3FB5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C6187C34EF600B6060466DA1 /* Build configuration list for PBXProject "CampusLock" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A52782B43A0D7C7D427BC27D /* Debug */,
+				E14F6C1E8FD08C48038E6D8A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FB8E15DCE973A1C4161AFDC8 /* Build configuration list for PBXNativeTarget "CampusLock" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				096237F669D8E962361FF715 /* Debug */,
+				6A61E7236EDE1662204C53E6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F4ED520A61927CE8D10EE2D4 /* Project object */;
+}

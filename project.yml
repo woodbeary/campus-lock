@@ -1,0 +1,89 @@
+name: CampusLock
+options:
+  minimumXcodeGenVersion: 2.40.0
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: "YOUR_TEAM_ID"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: "YES"
+targets:
+  CampusLockCore:
+    type: framework
+    platform: iOS
+    sources:
+      - Sources/CampusLockCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.CampusLockCore
+        GENERATE_INFOPLIST_FILE: "YES"
+        SKIP_INSTALL: "YES"
+  CampusLock:
+    type: application
+    platform: iOS
+    sources:
+      - CampusLock
+    resources:
+      - CampusLock/Resources
+    dependencies:
+      - target: CampusLockCore
+    info:
+      path: CampusLock/Info.plist
+      properties:
+        CFBundleDisplayName: Campus Lock
+        ITSAppUsesNonExemptEncryption: false
+        NSLocationWhenInUseUsageDescription: Campus Lock uses your current location to draw the class radius.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Campus Lock can unlock apps when you leave the class zone.
+        UIApplicationSupportsIndirectInputEvents: true
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+    entitlements:
+      path: CampusLock/CampusLock.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+  CampusLockTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - CampusLockTests
+    dependencies:
+      - target: CampusLockCore
+      - target: CampusLock
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock.tests
+  CampusLockUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - CampusLockUITests
+    dependencies:
+      - target: CampusLock
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock.uitests
+schemes:
+  CampusLock:
+    build:
+      targets:
+        CampusLock: all
+        CampusLockTests: [test]
+        CampusLockUITests: [test]
+    test:
+      gatherCoverageData: true
+      targets:
+        - CampusLockTests
+        - CampusLockUITests
+    run:
+      config: Debug
+    archive:
+      config: Release
