@@ -121,6 +121,6 @@ The script expects the local Mac/Xcode account to be release-ready:
 - The matching iOS platform for the connected iPhone is installed in Xcode Components.
 - Family Controls Development and Distribution are approved for the main app and both shield extension bundle IDs.
 
-Current local audit details are in `READINESS_AUDIT.md` and `COMPLETION_AUDIT.md`.
+Current local audit details are in `READINESS_AUDIT.md`, `COMPLETION_AUDIT.md`, and the machine-readable `RELEASE_BLOCKERS.json`.
 
 The archive release is considered complete when `build/export` contains an installable `.ipa` produced by `./scripts/archive-adhoc.sh`. The development-signed fallback is considered ready for registered devices when `build/export/CampusLock-development.ipa` exists, `./scripts/install-development-build.sh` installs it successfully, and the installed app launch/visual smoke test passes on the unlocked phone.
