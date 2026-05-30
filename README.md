@@ -1,22 +1,27 @@
 # Campus Lock
 
-Native SwiftUI MVP for a classroom focus lock and attendance flow.
+Native SwiftUI MVP for classroom focus locking and attendance.
 
-## What works
+## What is implemented
 
 - Setup gate for Screen Time and Location permissions.
-- App/category selection with Apple `FamilyControls` picker when available.
-- Location radius builder with a 50-500 meter slider.
-- One-tap class entry that marks attendance and applies Screen Time shields.
-- Manual unlock and automatic geofence checkout path.
-- Local attendance persistence and CSV export.
-- Native SwiftUI UI with iOS 26 Liquid Glass guarded by availability fallback.
+- Apple `FamilyControls` picker for user-selected apps/categories.
+- Local persistence for the selected Screen Time tokens.
+- `ManagedSettingsStore` shields for selected apps/categories.
+- Custom Screen Time shield configuration and action extensions.
+- Native MapKit classroom radius with a 50-500 meter slider and Always Location setup gate.
+- Tap-in attendance that starts focus and tap-out/manual unlock that ends it.
+- Geofence exit path that unlocks when the user leaves the radius.
+- Local JSON persistence, attendance history, insights, and CSV export.
+- Native SwiftUI interface with iOS 26 Liquid Glass where available and fallback materials elsewhere.
 
-## Verify
+## Verify locally
 
 ```sh
 ./scripts/verify.sh
 ```
+
+This runs Swift package tests, regenerates the Xcode project, typechecks against the installed iPhoneOS SDK, and performs an unsigned iPhoneOS build of the app plus shield extensions.
 
 ## Generate project
 
@@ -25,20 +30,17 @@ xcodegen generate
 open CampusLock.xcodeproj
 ```
 
-## Build to iPhone
-
-1. Open `CampusLock.xcodeproj`.
-2. Select the `CampusLock` scheme.
-3. Select the test iPhone.
-4. Confirm Signing & Capabilities uses team `YOUR_TEAM_ID`.
-5. Build and run.
-
-## Ad hoc archive
+## Build an installable iPhone release
 
 ```sh
 ./scripts/archive-adhoc.sh
 ```
 
-Important: real app blocking requires Apple approval for the Family Controls entitlement on the signing team. The app is wired to the real APIs and does not pretend entitlement approval is automatic.
+The script expects the local Mac/Xcode account to be release-ready:
 
-If `xcodebuild` reports that iOS is not installed, open Xcode > Settings > Components and install the matching iOS platform/runtime. The repo also includes `./scripts/typecheck-ios.sh`, which verifies the SwiftUI app against the iPhoneOS SDK without requiring Simulator.
+- Xcode is signed in to Apple Developer team `YOUR_TEAM_ID`.
+- Provisioning profiles can be created or downloaded for the app and shield extensions.
+- The matching iOS platform for the connected iPhone is installed in Xcode Components.
+- Family Controls is approved for the main app and both shield extension bundle IDs.
+
+Current local audit details are in `READINESS_AUDIT.md`.

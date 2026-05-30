@@ -12,6 +12,19 @@ xcodegen generate
 echo "== iOS SDK typecheck =="
 ./scripts/typecheck-ios.sh
 
+iphoneos_sdk="${IPHONEOS_SDK:-iphoneos$(xcrun --sdk iphoneos --show-sdk-version)}"
+
+echo "== iPhoneOS app build =="
+xcodebuild \
+  -project CampusLock.xcodeproj \
+  -target CampusLock \
+  -configuration Debug \
+  -sdk "$iphoneos_sdk" \
+  -arch arm64 \
+  CODE_SIGNING_ALLOWED=NO \
+  ENABLE_ON_DEMAND_RESOURCES=NO \
+  build
+
 if xcodebuild -project CampusLock.xcodeproj -scheme CampusLock -showdestinations 2>/dev/null \
   | awk '/Available destinations/{available=1; next} /Ineligible destinations/{available=0} available && /platform:iOS/{found=1} END{exit found ? 0 : 1}'; then
   echo "== iOS Debug build =="

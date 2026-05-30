@@ -8,6 +8,7 @@ final class LocationController: NSObject, CLLocationManagerDelegate {
 
     private let manager = CLLocationManager()
     private var authorizationContinuation: CheckedContinuation<PermissionStatus, Never>?
+    private var requestedAlwaysUpgrade = false
 
     override init() {
         super.init()
@@ -21,8 +22,11 @@ final class LocationController: NSObject, CLLocationManagerDelegate {
         case .authorizedAlways:
             return .approved
         case .authorizedWhenInUse:
-            manager.requestAlwaysAuthorization()
-            return .approved
+            return await withCheckedContinuation { continuation in
+                authorizationContinuation = continuation
+                requestedAlwaysUpgrade = true
+                manager.requestAlwaysAuthorization()
+            }
         case .denied, .restricted:
             return .denied("Location denied")
         case .notDetermined:
@@ -82,13 +86,21 @@ final class LocationController: NSObject, CLLocationManagerDelegate {
         case .authorizedAlways:
             authorizationContinuation.resume(returning: .approved)
         case .authorizedWhenInUse:
-            manager.requestAlwaysAuthorization()
-            authorizationContinuation.resume(returning: .approved)
+            if requestedAlwaysUpgrade {
+                requestedAlwaysUpgrade = false
+                authorizationContinuation.resume(returning: .denied("Allow Always Location"))
+            } else {
+                requestedAlwaysUpgrade = true
+                self.authorizationContinuation = authorizationContinuation
+                manager.requestAlwaysAuthorization()
+            }
         case .denied, .restricted:
+            requestedAlwaysUpgrade = false
             authorizationContinuation.resume(returning: .denied("Location denied"))
         case .notDetermined:
             self.authorizationContinuation = authorizationContinuation
         @unknown default:
+            requestedAlwaysUpgrade = false
             authorizationContinuation.resume(returning: .denied("Location unavailable"))
         }
     }

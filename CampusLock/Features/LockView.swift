@@ -70,15 +70,15 @@ private struct ReadyView: View {
             .accessibilityIdentifier("lock.startFocus")
 
             VStack(spacing: 4) {
-                Text("Start focus + attendance")
+                Text(store.hasShieldSelection ? "Start focus + attendance" : "Choose apps first")
                     .font(.headline)
-                Text("One action at the classroom door.")
+                Text(store.hasShieldSelection ? "One action at the classroom door." : "Pick apps before the first lock.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
             HStack(spacing: 12) {
-                MetricCard(value: "\(store.state.policy.blockedCategories.count)", label: "groups")
+                MetricCard(value: "\(store.selectedShieldItemCount)", label: "selected")
                 MetricCard(value: "\(store.state.selectedClass.durationMinutes)m", label: "class")
                 MetricCard(value: "4m", label: "pass")
             }

@@ -13,13 +13,12 @@ struct AppsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    Text("Paused during class")
+                    Text("Screen Time selection")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    searchBar
-                    categoryRows
                     selectedSummary
                     nativePickerButton
+                    allowedSummary
                 }
                 .padding(20)
             }
@@ -31,51 +30,13 @@ struct AppsView: View {
         }
     }
 
-    private var searchBar: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-            Text("Search apps or categories")
-            Spacer()
-        }
-        .foregroundStyle(.secondary)
-        .padding()
-        .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    private var categoryRows: some View {
-        VStack(spacing: 12) {
-            ForEach(AppCategory.allCases) { category in
-                HStack(spacing: 14) {
-                    Image(systemName: "square.grid.3x3")
-                        .foregroundStyle(category.isSafetyCritical ? .secondary : CampusTheme.accent)
-                        .frame(width: 40, height: 40)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(category.title)
-                            .font(.headline)
-                        Text(category.isSafetyCritical ? "Allowed" : "Pause group")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Toggle("", isOn: Binding(
-                        get: { store.state.policy.isBlocked(category) },
-                        set: { store.setBlocked(category, isBlocked: $0) }
-                    ))
-                    .labelsHidden()
-                    .disabled(category.isSafetyCritical)
-                }
-                .campusCard(padding: 14)
-            }
-        }
-    }
-
     private var selectedSummary: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(store.state.policy.blockedCategories.count)")
+            Text("\(store.selectedShieldItemCount)")
                 .font(.largeTitle.weight(.semibold))
-            Text("groups pause in focus")
+            Text("selected")
                 .foregroundStyle(.secondary)
-            Text("Phone, Messages, and Maps stay available.")
+            Text("Use Apple's picker so the lock applies to real apps, categories, and websites.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -87,9 +48,27 @@ struct AppsView: View {
         Button {
             store.isShowingAppPicker = true
         } label: {
-            Label("Choose Specific Apps", systemImage: "slider.horizontal.3")
+            Label("Choose Apps", systemImage: "slider.horizontal.3")
         }
-        .buttonStyle(CampusSecondaryButtonStyle())
+        .buttonStyle(CampusPrimaryButtonStyle())
         .accessibilityIdentifier("apps.chooseSpecific")
+    }
+
+    private var allowedSummary: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "checkmark.shield")
+                .foregroundStyle(CampusTheme.success)
+                .frame(width: 40, height: 40)
+                .background(CampusTheme.success.opacity(0.12), in: Circle())
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Always available")
+                    .font(.headline)
+                Text("Phone · Messages · Maps")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .campusCard(padding: 14)
     }
 }

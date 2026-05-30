@@ -1,4 +1,5 @@
 import CampusLockCore
+import MapKit
 import SwiftUI
 
 struct ZoneView: View {
@@ -11,7 +12,7 @@ struct ZoneView: View {
                 Text("Current location radius")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                ZoneMapCard(radius: store.state.zone.radiusMeters)
+                ZoneMapCard(center: store.state.zone.center, radius: store.state.zone.radiusMeters)
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Radius")
                         .font(.caption)
@@ -44,51 +45,57 @@ struct ZoneView: View {
 }
 
 private struct ZoneMapCard: View {
+    var center: Coordinate
     var radius: Double
+    @State private var cameraPosition: MapCameraPosition = .automatic
 
     var body: some View {
-        ZStack {
-            GridBackground()
-            Circle()
-                .fill(CampusTheme.accent.opacity(0.16))
-                .overlay {
-                    Circle().stroke(CampusTheme.accent, lineWidth: 3)
-                }
-                .frame(width: max(140, min(300, radius * 1.35)), height: max(140, min(300, radius * 1.35)))
-            Circle()
-                .fill(CampusTheme.accent)
-                .frame(width: 16, height: 16)
+        Map(position: $cameraPosition, interactionModes: [.pan, .zoom]) {
+            MapCircle(center: coordinate, radius: radius)
+                .foregroundStyle(CampusTheme.accent.opacity(0.18))
+                .stroke(CampusTheme.accent, lineWidth: 2)
+            Annotation("Class Zone", coordinate: coordinate) {
+                Circle()
+                    .fill(CampusTheme.accent)
+                    .frame(width: 18, height: 18)
+                    .overlay {
+                        Circle().stroke(.background, lineWidth: 4)
+                    }
+            }
+            UserAnnotation()
+        }
+        .mapControls {
+            MapUserLocationButton()
+        }
+        .overlay(alignment: .bottom) {
             Text("\(Int(radius)) m")
                 .font(.caption.weight(.semibold))
                 .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.vertical, 7)
                 .background(.background, in: Capsule())
-                .offset(y: 128)
+                .padding(.bottom, 14)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 420)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .campusGlass(cornerRadius: 28)
+        .onAppear(perform: refreshCamera)
+        .onChange(of: center) { _, _ in refreshCamera() }
+        .onChange(of: radius) { _, _ in refreshCamera() }
     }
-}
 
-private struct GridBackground: View {
-    var body: some View {
-        Canvas { context, size in
-            let lineColor = Color(.separator).opacity(0.5)
-            for index in stride(from: -size.height, through: size.width, by: 58) {
-                var path = Path()
-                path.move(to: CGPoint(x: index, y: 0))
-                path.addLine(to: CGPoint(x: index + size.height * 0.35, y: size.height))
-                context.stroke(path, with: .color(lineColor), lineWidth: 1)
-            }
-            for index in stride(from: 0, through: size.height * 1.2, by: 58) {
-                var path = Path()
-                path.move(to: CGPoint(x: 0, y: index))
-                path.addLine(to: CGPoint(x: size.width, y: index - size.width * 0.18))
-                context.stroke(path, with: .color(lineColor), lineWidth: 1)
-            }
-        }
-        .background(Color(.tertiarySystemGroupedBackground))
+    private var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude)
+    }
+
+    private func refreshCamera() {
+        cameraPosition = .camera(
+            MapCamera(
+                centerCoordinate: coordinate,
+                distance: max(radius * 4, 450),
+                heading: 0,
+                pitch: 0
+            )
+        )
     }
 }

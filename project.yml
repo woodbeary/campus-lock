@@ -20,27 +20,38 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.CampusLockCore
+        PRODUCT_NAME: CampusLockCore
         GENERATE_INFOPLIST_FILE: "YES"
         SKIP_INSTALL: "YES"
+        ALWAYS_SEARCH_USER_PATHS: "NO"
   CampusLock:
     type: application
     platform: iOS
     sources:
       - CampusLock
     resources:
-      - CampusLock/Resources
+      - CampusLock/Resources/Icons
     dependencies:
       - target: CampusLockCore
+      - target: CampusLockShieldConfiguration
+        embed: true
+      - target: CampusLockShieldAction
+        embed: true
     info:
       path: CampusLock/Info.plist
       properties:
         CFBundleDisplayName: Campus Lock
+        CFBundleIconFiles:
+          - AppIcon60x60
+        CFBundleIcons:
+          CFBundlePrimaryIcon:
+            CFBundleIconFiles:
+              - AppIcon60x60
+            UIPrerenderedIcon: false
         ITSAppUsesNonExemptEncryption: false
         NSLocationWhenInUseUsageDescription: Campus Lock uses your current location to draw the class radius.
         NSLocationAlwaysAndWhenInUseUsageDescription: Campus Lock can unlock apps when you leave the class zone.
         UIApplicationSupportsIndirectInputEvents: true
-        UILaunchScreen:
-          UIColorName: LaunchBackground
     entitlements:
       path: CampusLock/CampusLock.entitlements
       properties:
@@ -48,8 +59,9 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        PRODUCT_NAME: CampusLock
         TARGETED_DEVICE_FAMILY: "1"
+        ALWAYS_SEARCH_USER_PATHS: "NO"
   CampusLockTests:
     type: bundle.unit-test
     platform: iOS
@@ -61,6 +73,48 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock.tests
+        PRODUCT_NAME: CampusLockTests
+        ALWAYS_SEARCH_USER_PATHS: "NO"
+  CampusLockShieldConfiguration:
+    type: app-extension
+    platform: iOS
+    sources:
+      - CampusLockShieldConfiguration
+    entitlements:
+      path: CampusLockShieldConfiguration/CampusLockShieldConfiguration.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+    info:
+      path: CampusLockShieldConfiguration/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.shield-configuration-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldConfigurationExtension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock.shield-configuration
+        PRODUCT_NAME: CampusLockShieldConfiguration
+        ALWAYS_SEARCH_USER_PATHS: "NO"
+  CampusLockShieldAction:
+    type: app-extension
+    platform: iOS
+    sources:
+      - CampusLockShieldAction
+    entitlements:
+      path: CampusLockShieldAction/CampusLockShieldAction.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+    info:
+      path: CampusLockShieldAction/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettings.shield-action-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldActionExtension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock.shield-action
+        PRODUCT_NAME: CampusLockShieldAction
+        ALWAYS_SEARCH_USER_PATHS: "NO"
   CampusLockUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -71,6 +125,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.woodbeary.campuslock.uitests
+        PRODUCT_NAME: CampusLockUITests
+        ALWAYS_SEARCH_USER_PATHS: "NO"
 schemes:
   CampusLock:
     build:

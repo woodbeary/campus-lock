@@ -16,7 +16,12 @@ final class CampusLockStore {
     var isShowingAppPicker = false
 
     #if canImport(FamilyControls)
-    var activitySelection = FamilyActivitySelection()
+    var activitySelection = FamilyActivitySelection() {
+        didSet {
+            guard !isUITesting else { return }
+            repository.saveActivitySelection(activitySelection)
+        }
+    }
     #endif
 
     @ObservationIgnored private let reducer = CampusLockReducer()
@@ -31,6 +36,11 @@ final class CampusLockStore {
     ) {
         self.isUITesting = isUITesting
         self.state = isUITesting ? state : repository.load() ?? state
+        #if canImport(FamilyControls)
+        if !isUITesting {
+            activitySelection = repository.loadActivitySelection() ?? FamilyActivitySelection()
+        }
+        #endif
         locationController.onLocationUpdate = { [weak self] coordinate in
             self?.handleLocationUpdate(coordinate)
         }
@@ -49,6 +59,24 @@ final class CampusLockStore {
             scheduledClassCount: schedule.count,
             passingDurations: [180, 260, 210, 298]
         )
+    }
+
+    var selectedShieldItemCount: Int {
+        #if canImport(FamilyControls)
+        activitySelection.applicationTokens.count
+            + activitySelection.categoryTokens.count
+            + activitySelection.webDomainTokens.count
+        #else
+        state.policy.blockedCategories.count
+        #endif
+    }
+
+    var hasShieldSelection: Bool {
+        isUITesting || selectedShieldItemCount > 0
+    }
+
+    var canStartFocus: Bool {
+        state.isSetupComplete && hasShieldSelection
     }
 
     func completeSetup() async {
@@ -82,6 +110,10 @@ final class CampusLockStore {
     }
 
     func startFocus() {
+        guard canStartFocus else {
+            selectedTab = .apps
+            return
+        }
         apply(.startFocus(Date()))
         applyShield()
         locationController.monitor(zone: state.zone)
