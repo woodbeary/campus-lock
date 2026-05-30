@@ -17,6 +17,8 @@ struct AppsView: View {
                 symbol: "square.grid.3x3"
             )
             selectedSummary
+            recommendedPresetCard
+            permissionCard
             nativePickerCard
             allowedSummary
         }
@@ -41,11 +43,11 @@ struct AppsView: View {
             .frame(width: 52, height: 52)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text("\(store.selectedShieldItemCount)")
+                Text(store.hasShieldSelection ? "\(store.selectedShieldItemCount)" : "Preset")
                     .font(.largeTitle.weight(.semibold))
                     .monospacedDigit()
                     .contentTransition(.numericText())
-                Text("selected")
+                Text(store.hasShieldSelection ? "selected" : "recommended")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -57,9 +59,9 @@ struct AppsView: View {
 
     private var nativePickerCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Apple Screen Time")
+            Text("Apple App Picker")
                 .font(.headline)
-            Text("Uses Family Controls so real apps, categories, and websites are shielded during focus.")
+            Text("Opens Apple’s private Screen Time picker with real apps, categories, and websites from this iPhone.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -68,11 +70,56 @@ struct AppsView: View {
         .campusCard()
     }
 
+    private var permissionCard: some View {
+        HStack(spacing: 14) {
+            Image(systemName: store.screenTimeReady ? "checkmark.shield.fill" : "lock.shield")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(store.screenTimeReady ? CampusTheme.success : CampusTheme.accent)
+                .frame(width: 40, height: 40)
+                .background((store.screenTimeReady ? CampusTheme.success : CampusTheme.accent).opacity(0.12), in: Circle())
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Screen Time Permission")
+                    .font(.headline)
+                Text(store.screenTimeReady ? "Ready for focus controls" : "Required before Apple can show apps")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 0)
+        }
+        .campusCard(padding: 14)
+    }
+
+    private var recommendedPresetCard: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "sparkles.rectangle.stack")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(CampusTheme.accent)
+                .frame(width: 40, height: 40)
+                .background(CampusTheme.accent.opacity(0.12), in: Circle())
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Recommended Focus")
+                    .font(.headline)
+                Text("Default shields every app and website category Apple allows Campus Lock to control.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+            Image(systemName: store.hasShieldSelection ? "circle" : "checkmark")
+                .font(.headline)
+                .foregroundStyle(store.hasShieldSelection ? .secondary : CampusTheme.success)
+        }
+        .campusCard(padding: 14)
+    }
+
     private var nativePickerButton: some View {
         Button {
-            store.isShowingAppPicker = true
+            Task {
+                await store.openAppPicker()
+            }
         } label: {
-            Label("Choose Apps", systemImage: "slider.horizontal.3")
+            Label(store.screenTimeReady ? "Customize Apps" : "Allow Screen Time", systemImage: store.screenTimeReady ? "slider.horizontal.3" : "lock.shield")
         }
         .buttonStyle(CampusPrimaryButtonStyle())
         .accessibilityIdentifier("apps.chooseSpecific")
@@ -86,12 +133,12 @@ struct AppsView: View {
                 .frame(width: 40, height: 40)
                 .background(CampusTheme.success.opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 3) {
-                Text("Always available")
+                Text("Emergency safe")
                     .font(.headline)
-                Text("Phone · Messages · Maps")
+                Text("Phone calls stay available by iOS. Customize exceptions anytime.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
         }

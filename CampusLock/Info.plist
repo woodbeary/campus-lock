@@ -40,9 +40,17 @@
 	<false/>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Campus Lock can unlock apps when you leave the class zone.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Campus Lock can unlock apps when you leave the class zone.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Campus Lock uses your current location to draw the class radius.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+	<key>UILaunchScreen</key>
+	<dict/>
 </dict>
 </plist>

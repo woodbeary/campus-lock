@@ -6,18 +6,27 @@ struct RootView: View {
     var body: some View {
         @Bindable var store = store
 
-        ZStack {
-            CampusTheme.background.ignoresSafeArea()
-            selectedScreen
-                .id(store.selectedTab)
-                .transition(.opacity.combined(with: .offset(y: 6)))
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusFooterMenu(selection: $store.selectedTab)
+        Group {
+            if store.shouldShowSetup {
+                SetupView()
+            } else {
+                ZStack {
+                    CampusTheme.background.ignoresSafeArea()
+                    selectedScreen
+                        .id(store.selectedTab)
+                        .transition(.opacity.combined(with: .offset(y: 6)))
+                }
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    CampusFooterMenu(selection: $store.selectedTab)
+                }
+            }
         }
         .tint(CampusTheme.accent)
         .animation(.snappy(duration: 0.18), value: store.selectedTab)
         .sensoryFeedback(.selection, trigger: store.selectedTab)
+        .task {
+            await store.refreshRuntimeStatus()
+        }
     }
 
     @ViewBuilder
@@ -38,11 +47,7 @@ struct RootView: View {
 
     @ViewBuilder
     private var lockTab: some View {
-        if store.state.isSetupComplete {
-            LockView()
-        } else {
-            SetupView()
-        }
+        LockView()
     }
 }
 

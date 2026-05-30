@@ -14,12 +14,17 @@ final class CampusLockStore {
     var locationStatus: PermissionStatus = .notDetermined
     var selectedTab: AppTab = .lock
     var isShowingAppPicker = false
+    var isRequestingPermissions = false
+    var isLocating = false
 
     #if canImport(FamilyControls)
     var activitySelection = FamilyActivitySelection() {
         didSet {
             guard !isUITesting else { return }
             repository.saveActivitySelection(activitySelection)
+            if hasShieldSelection {
+                authorizationStatus = .approved
+            }
         }
     }
     #endif
@@ -45,6 +50,12 @@ final class CampusLockStore {
         locationController.onLocationUpdate = { [weak self] coordinate in
             self?.handleLocationUpdate(coordinate)
         }
+        locationController.onLocationFailure = { [weak self] in
+            self?.isLocating = false
+        }
+        locationController.onAuthorizationChange = { [weak self] status in
+            self?.handleLocationAuthorizationChange(status)
+        }
         if isUITesting && !arguments.contains("--ui-testing-setup-required") {
             apply(.completeSetup)
         }
@@ -62,7 +73,7 @@ final class CampusLockStore {
         )
     }
 
-    var selectedShieldItemCount: Int {
+    var customShieldItemCount: Int {
         #if canImport(FamilyControls)
         activitySelection.applicationTokens.count
             + activitySelection.categoryTokens.count
@@ -72,12 +83,54 @@ final class CampusLockStore {
         #endif
     }
 
+    var selectedShieldItemCount: Int {
+        customShieldItemCount
+    }
+
     var hasShieldSelection: Bool {
-        isUITesting || selectedShieldItemCount > 0
+        isUITesting || customShieldItemCount > 0
+    }
+
+    var screenTimeReady: Bool {
+        authorizationStatus.isUsable || hasShieldSelection
+    }
+
+    var screenTimeStatusLabel: String {
+        screenTimeReady ? "Ready" : authorizationStatus.label
+    }
+
+    var focusSetupSubtitle: String {
+        hasShieldSelection ? "\(customShieldItemCount) custom selected" : "Recommended preset"
+    }
+
+    var focusMetricValue: String {
+        hasShieldSelection ? "\(customShieldItemCount)" : "Preset"
+    }
+
+    var focusMetricLabel: String {
+        hasShieldSelection ? "selected" : "focus"
+    }
+
+    var shouldShowSetup: Bool {
+        !state.isSetupComplete || !screenTimeReady || !locationStatus.isUsable
     }
 
     var canStartFocus: Bool {
-        state.isSetupComplete && hasShieldSelection
+        state.isSetupComplete && screenTimeReady && locationStatus.isUsable
+    }
+
+    func refreshRuntimeStatus() async {
+        guard !isUITesting else {
+            authorizationStatus = .approved
+            locationStatus = .approved
+            return
+        }
+        authorizationStatus = screenTimeController.currentAuthorizationStatus()
+        locationStatus = locationController.currentAuthorizationStatus()
+        if locationStatus.isUsable {
+            locationController.startUpdating()
+            locationController.requestCurrentLocation()
+        }
     }
 
     func completeSetup() async {
@@ -87,12 +140,55 @@ final class CampusLockStore {
             apply(.completeSetup)
             return
         }
-        authorizationStatus = await screenTimeController.requestAuthorization()
-        locationStatus = await locationController.requestAuthorization()
-        if authorizationStatus.isUsable && locationStatus.isUsable {
+        isRequestingPermissions = true
+        defer { isRequestingPermissions = false }
+        await requestScreenTimeAuthorization()
+        await requestLocationRefresh()
+        if screenTimeReady && locationStatus.isUsable {
             apply(.completeSetup)
-            locationController.startUpdating()
+            selectedTab = .zone
         }
+    }
+
+    @discardableResult
+    func requestScreenTimeAuthorization() async -> Bool {
+        if isUITesting {
+            authorizationStatus = .approved
+            return true
+        }
+        if hasShieldSelection {
+            authorizationStatus = .approved
+            return true
+        }
+        if authorizationStatus.isUsable {
+            return true
+        }
+        authorizationStatus = await screenTimeController.requestAuthorization()
+        return screenTimeReady
+    }
+
+    @discardableResult
+    func requestLocationRefresh() async -> Bool {
+        if isUITesting {
+            locationStatus = .approved
+            return true
+        }
+        isLocating = true
+        if !locationStatus.isUsable {
+            locationStatus = await locationController.requestAuthorization()
+        }
+        guard locationStatus.isUsable else {
+            isLocating = false
+            return false
+        }
+        locationController.startUpdating()
+        locationController.requestCurrentLocation()
+        return true
+    }
+
+    func openAppPicker() async {
+        guard await requestScreenTimeAuthorization() else { return }
+        isShowingAppPicker = true
     }
 
     func setBlocked(_ category: AppCategory, isBlocked: Bool) {
@@ -111,10 +207,11 @@ final class CampusLockStore {
     }
 
     func startFocus() {
-        guard canStartFocus else {
-            selectedTab = .apps
+        guard screenTimeReady && locationStatus.isUsable else {
+            selectedTab = .lock
             return
         }
+        guard canStartFocus else { return }
         apply(.startFocus(Date()))
         applyShield()
         locationController.monitor(zone: state.zone)
@@ -130,11 +227,23 @@ final class CampusLockStore {
     }
 
     func handleLocationUpdate(_ coordinate: Coordinate) {
+        isLocating = false
         if state.activeSession == nil {
             apply(.updateLocation(coordinate))
         } else {
             apply(.leaveZone(coordinate, Date()))
             applyShield()
+        }
+    }
+
+    func handleLocationAuthorizationChange(_ status: PermissionStatus) {
+        locationStatus = status
+        guard status.isUsable else { return }
+        locationController.startUpdating()
+        locationController.requestCurrentLocation()
+        if screenTimeReady && !state.isSetupComplete {
+            apply(.completeSetup)
+            selectedTab = .zone
         }
     }
 

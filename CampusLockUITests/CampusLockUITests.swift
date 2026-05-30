@@ -6,15 +6,14 @@ final class CampusLockUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testSetupScreenKeepsFooterAndFixedAction() {
+    func testSetupScreenHidesFooterAndKeepsFixedAction() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-setup-required"]
         app.launch()
 
-        XCTAssertTrue(tabButton("Lock", app: app).waitForExistence(timeout: 5))
-        assertFooterTabsStayReachable(app)
+        XCTAssertFalse(app.otherElements["footer.menu"].exists, "onboarding should not show the main footer")
         XCTAssertTrue(app.buttons["setup.continue"].waitForExistence(timeout: 5))
-        assertActionSitsAboveFooter("setup.continue", app: app)
+        assertActionSitsInBottomSafeArea("setup.continue", app: app)
     }
 
     func testSetupStartFocusAndUnlockFlow() {
@@ -53,6 +52,11 @@ final class CampusLockUITests: XCTestCase {
         XCTAssertTrue(tab.waitForExistence(timeout: 5), "\(tabLabel) tab should exist")
         tab.tap()
 
+        if tabLabel == "Apps" {
+            XCTAssertTrue(app.staticTexts["Recommended Focus"].waitForExistence(timeout: 5), "Apps should expose the default recommended preset")
+            XCTAssertTrue(app.staticTexts["Emergency safe"].exists, "Apps should describe the iOS phone-call safety behavior")
+        }
+
         let action = app.buttons[actionIdentifier]
         XCTAssertTrue(action.waitForExistence(timeout: 5), "\(actionIdentifier) should exist")
         XCTAssertTrue(action.isHittable, "\(actionIdentifier) should be reachable")
@@ -79,6 +83,15 @@ final class CampusLockUITests: XCTestCase {
         XCTAssertGreaterThan(action.frame.minY, app.frame.midY, "\(actionIdentifier) should stay in the predictable bottom action area")
         XCTAssertLessThan(action.frame.maxY, footer.frame.minY, "\(actionIdentifier) should not overlap the footer")
         XCTAssertGreaterThan(footer.frame.minY - action.frame.maxY, 2, "\(actionIdentifier) should leave visible breathing room above the footer")
+        XCTAssertGreaterThanOrEqual(action.frame.minY, app.frame.minY, "\(actionIdentifier) should not be cropped above the screen")
+    }
+
+    private func assertActionSitsInBottomSafeArea(_ actionIdentifier: String, app: XCUIApplication) {
+        let action = app.buttons[actionIdentifier]
+        XCTAssertTrue(action.waitForExistence(timeout: 5), "\(actionIdentifier) should exist")
+        XCTAssertTrue(action.isHittable, "\(actionIdentifier) should be hittable")
+        XCTAssertGreaterThan(action.frame.minY, app.frame.midY, "\(actionIdentifier) should stay in the predictable bottom action area")
+        XCTAssertLessThanOrEqual(action.frame.maxY, app.frame.maxY, "\(actionIdentifier) should not be cropped below the screen")
         XCTAssertGreaterThanOrEqual(action.frame.minY, app.frame.minY, "\(actionIdentifier) should not be cropped above the screen")
     }
 

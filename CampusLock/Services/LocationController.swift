@@ -5,6 +5,8 @@ import Foundation
 @MainActor
 final class LocationController: NSObject, CLLocationManagerDelegate {
     var onLocationUpdate: ((Coordinate) -> Void)?
+    var onLocationFailure: (() -> Void)?
+    var onAuthorizationChange: ((PermissionStatus) -> Void)?
 
     private let manager = CLLocationManager()
     private var authorizationContinuation: CheckedContinuation<PermissionStatus, Never>?
@@ -17,16 +19,18 @@ final class LocationController: NSObject, CLLocationManagerDelegate {
         manager.distanceFilter = 10
     }
 
+    func currentAuthorizationStatus() -> PermissionStatus {
+        permissionStatus(for: manager.authorizationStatus)
+    }
+
     func requestAuthorization() async -> PermissionStatus {
         switch manager.authorizationStatus {
         case .authorizedAlways:
             return .approved
         case .authorizedWhenInUse:
-            return await withCheckedContinuation { continuation in
-                authorizationContinuation = continuation
-                requestedAlwaysUpgrade = true
-                manager.requestAlwaysAuthorization()
-            }
+            requestedAlwaysUpgrade = true
+            manager.requestAlwaysAuthorization()
+            return .denied("Allow Always")
         case .denied, .restricted:
             return .denied("Location denied")
         case .notDetermined:
@@ -41,6 +45,11 @@ final class LocationController: NSObject, CLLocationManagerDelegate {
 
     func startUpdating() {
         manager.startUpdatingLocation()
+    }
+
+    func requestCurrentLocation() {
+        guard manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse else { return }
+        manager.requestLocation()
     }
 
     func monitor(zone: CampusZone) {
@@ -64,6 +73,12 @@ final class LocationController: NSObject, CLLocationManagerDelegate {
         }
     }
 
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        Task { @MainActor in
+            onLocationFailure?()
+        }
+    }
+
     nonisolated func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         guard let location = manager.location else { return }
         let coordinate = Coordinate(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
@@ -80,28 +95,35 @@ final class LocationController: NSObject, CLLocationManagerDelegate {
     }
 
     private func finishAuthorization(_ status: CLAuthorizationStatus) {
-        guard let authorizationContinuation else { return }
-        self.authorizationContinuation = nil
+        guard status != .notDetermined else { return }
+
+        if status == .authorizedWhenInUse {
+            requestedAlwaysUpgrade = true
+            manager.requestAlwaysAuthorization()
+        } else if status != .authorizedAlways {
+            requestedAlwaysUpgrade = false
+        }
+
+        let permissionStatus = permissionStatus(for: status)
+        if let authorizationContinuation {
+            self.authorizationContinuation = nil
+            authorizationContinuation.resume(returning: permissionStatus)
+        }
+        onAuthorizationChange?(permissionStatus)
+    }
+
+    private func permissionStatus(for status: CLAuthorizationStatus) -> PermissionStatus {
         switch status {
         case .authorizedAlways:
-            authorizationContinuation.resume(returning: .approved)
+            return .approved
         case .authorizedWhenInUse:
-            if requestedAlwaysUpgrade {
-                requestedAlwaysUpgrade = false
-                authorizationContinuation.resume(returning: .denied("Allow Always Location"))
-            } else {
-                requestedAlwaysUpgrade = true
-                self.authorizationContinuation = authorizationContinuation
-                manager.requestAlwaysAuthorization()
-            }
+            return .denied("Allow Always")
         case .denied, .restricted:
-            requestedAlwaysUpgrade = false
-            authorizationContinuation.resume(returning: .denied("Location denied"))
+            return .denied("Location denied")
         case .notDetermined:
-            self.authorizationContinuation = authorizationContinuation
+            return .notDetermined
         @unknown default:
-            requestedAlwaysUpgrade = false
-            authorizationContinuation.resume(returning: .denied("Location unavailable"))
+            return .denied("Location unavailable")
         }
     }
 }

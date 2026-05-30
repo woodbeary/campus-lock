@@ -14,29 +14,56 @@ struct ZoneView: View {
                 subtitle: "Draw the classroom radius around your current location.",
                 symbol: "location"
             )
-            ZoneMapCard(
-                center: store.state.zone.center,
-                radius: store.state.zone.radiusMeters
-            )
+            if let currentLocation = store.state.currentLocation {
+                ZoneMapCard(
+                    center: currentLocation,
+                    radius: store.state.zone.radiusMeters
+                )
+            } else {
+                LocationPendingCard(
+                    status: store.locationStatus.label,
+                    isLocating: store.isLocating
+                )
+            }
             radiusCard
         }
         .campusFixedAction {
-            Button {
-                didEnableZone.toggle()
-                store.startFocus()
-                store.selectedTab = .lock
-            } label: {
-                Label("Enable Zone", systemImage: "location.fill")
-            }
-            .buttonStyle(CampusPrimaryButtonStyle())
-            .accessibilityIdentifier("zone.enable")
+            bottomAction
         }
         .sensoryFeedback(.selection, trigger: Int(store.state.zone.radiusMeters))
         .sensoryFeedback(.success, trigger: didEnableZone)
+        .task {
+            if store.state.currentLocation == nil {
+                await store.requestLocationRefresh()
+            }
+        }
+    }
+
+    private var bottomAction: some View {
+        Button {
+            Task {
+                if store.state.currentLocation == nil || !store.locationStatus.isUsable {
+                    await store.requestLocationRefresh()
+                } else {
+                    didEnableZone.toggle()
+                    store.startFocus()
+                    store.selectedTab = .lock
+                }
+            }
+        } label: {
+            if store.state.currentLocation == nil || !store.locationStatus.isUsable {
+                Label(store.isLocating ? "Locating" : "Use Current Location", systemImage: store.isLocating ? "location.magnifyingglass" : "location.fill")
+            } else {
+                Label("Enable Zone", systemImage: "location.fill")
+            }
+        }
+        .buttonStyle(CampusPrimaryButtonStyle())
+        .disabled(store.isLocating)
+        .accessibilityIdentifier("zone.enable")
     }
 
     private var radiusCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 9) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Radius")
                     .font(.caption)
@@ -64,6 +91,38 @@ struct ZoneView: View {
             .font(.caption2)
             .foregroundStyle(.secondary)
         }
+        .campusCard(padding: 12)
+    }
+}
+
+private struct LocationPendingCard: View {
+    var status: String
+    var isLocating: Bool
+
+    var body: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .stroke(CampusTheme.accent.opacity(0.14), lineWidth: 10)
+                    .frame(width: 116, height: 116)
+                Image(systemName: isLocating ? "location.magnifyingglass" : "location.circle")
+                    .font(.system(size: 38, weight: .semibold))
+                    .foregroundStyle(CampusTheme.accent)
+                    .symbolEffect(.pulse, value: isLocating)
+            }
+
+            VStack(spacing: 5) {
+                Text(isLocating ? "Finding Current Location" : "Current Location Needed")
+                    .font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                Text(status == "Ready" ? "Keep the iPhone awake while GPS updates the class zone." : "Allow Location so the radius is drawn where you are, not from a demo fallback.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity)
         .campusCard()
     }
 }
@@ -100,7 +159,7 @@ private struct ZoneMapCard: View {
                 .padding(.bottom, 14)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 268)
+        .frame(height: 198)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 28, style: .continuous)

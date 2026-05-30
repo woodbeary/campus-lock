@@ -5,11 +5,13 @@ Native SwiftUI MVP for classroom focus locking and attendance.
 ## What is implemented
 
 - Setup gate for Screen Time and Location permissions.
+- Onboarding-first flow with no main footer until required permissions are approved.
+- Recommended focus preset that shields every app and website category Apple allows without forcing manual app selection.
 - Apple `FamilyControls` picker for user-selected apps/categories.
 - Local persistence for the selected Screen Time tokens.
 - `ManagedSettingsStore` shields for selected apps/categories.
 - Custom Screen Time shield configuration and action extensions.
-- Native MapKit classroom radius with a 50-500 meter slider and Always Location setup gate.
+- Native MapKit classroom radius around the current location with a 50-500 meter slider and Always Location setup gate.
 - Tap-in attendance that starts focus and tap-out/manual unlock that ends it.
 - Geofence exit path that unlocks when the user leaves the radius.
 - Local JSON persistence, attendance history, insights, and CSV export.

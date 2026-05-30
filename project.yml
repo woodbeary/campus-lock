@@ -52,7 +52,11 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSLocationWhenInUseUsageDescription: Campus Lock uses your current location to draw the class radius.
         NSLocationAlwaysAndWhenInUseUsageDescription: Campus Lock can unlock apps when you leave the class zone.
+        NSLocationAlwaysUsageDescription: Campus Lock can unlock apps when you leave the class zone.
         UIApplicationSupportsIndirectInputEvents: true
+        UIBackgroundModes:
+          - location
+        UILaunchScreen: {}
     entitlements:
       path: CampusLock/CampusLock.entitlements
       properties:

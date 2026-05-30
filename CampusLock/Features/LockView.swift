@@ -31,7 +31,7 @@ private struct ReadyView: View {
             Button {
                 store.startFocus()
             } label: {
-                Label(store.hasShieldSelection ? "Tap In" : "Choose Apps", systemImage: store.hasShieldSelection ? "lock.fill" : "square.grid.3x3.fill")
+                Label("Tap In", systemImage: "lock.fill")
             }
             .buttonStyle(CampusPrimaryButtonStyle())
             .accessibilityIdentifier("lock.startFocus")
@@ -111,7 +111,7 @@ private struct ReadyView: View {
             Text("Ready")
                 .font(.largeTitle.weight(.semibold))
                 .lineLimit(1)
-            Text("Tap in at the door. Attendance is marked and selected apps lock.")
+            Text("Tap in at the door. Attendance is marked and the focus shield starts.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -120,15 +120,15 @@ private struct ReadyView: View {
 
     private var statusPill: some View {
         HStack(spacing: 12) {
-            Image(systemName: store.hasShieldSelection ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
+            Image(systemName: "checkmark.shield.fill")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(store.hasShieldSelection ? CampusTheme.success : CampusTheme.accent)
+                .foregroundStyle(CampusTheme.success)
                 .frame(width: 30, height: 30)
-                .background((store.hasShieldSelection ? CampusTheme.success : CampusTheme.accent).opacity(0.12), in: Circle())
+                .background(CampusTheme.success.opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 3) {
-                Text(store.hasShieldSelection ? "Focus + attendance" : "Choose apps first")
+                Text("Focus + attendance")
                     .font(.subheadline.weight(.semibold))
-                Text(store.hasShieldSelection ? "Tap once at the classroom door." : "Pick apps before the first lock.")
+                Text(store.hasShieldSelection ? "Custom app selection is active." : "Recommended focus preset is active.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -141,7 +141,7 @@ private struct ReadyView: View {
 
     private var metricsRow: some View {
         HStack(spacing: 10) {
-            MetricCard(value: "\(store.selectedShieldItemCount)", label: "selected")
+            MetricCard(value: store.focusMetricValue, label: store.focusMetricLabel)
             MetricCard(value: "\(store.state.selectedClass.durationMinutes)m", label: "class")
             MetricCard(value: "\(averagePassingMinutes)m", label: "avg pass")
         }
@@ -220,10 +220,10 @@ private struct FocusActiveView: View {
                 .frame(width: 38, height: 38)
                 .background(.white.opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 4) {
-                Text("Allowed")
+                Text("Emergency safe")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text("Phone · Messages · Maps")
+                Text("Phone calls stay available")
                     .font(.headline)
                     .foregroundStyle(.white)
             }
