@@ -39,6 +39,6 @@ open CampusLock.xcodeproj
 ./scripts/archive-adhoc.sh
 ```
 
-Important: real app blocking requires Apple approval for the Family Controls entitlement on the signing team. The app still builds and the local demo flow works without pretending that entitlement approval is automatic.
+Important: real app blocking requires Apple approval for the Family Controls entitlement on the signing team. The app is wired to the real APIs and does not pretend entitlement approval is automatic.
 
 If `xcodebuild` reports that iOS is not installed, open Xcode > Settings > Components and install the matching iOS platform/runtime. The repo also includes `./scripts/typecheck-ios.sh`, which verifies the SwiftUI app against the iPhoneOS SDK without requiring Simulator.
