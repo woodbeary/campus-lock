@@ -14,6 +14,7 @@ final class CampusLockUITests: XCTestCase {
         XCTAssertFalse(app.buttons["home.settings"].exists, "onboarding should not show home actions")
         XCTAssertTrue(app.buttons["setup.continue"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["setup.continue"].isEnabled, "continue should stay disabled until required permissions are complete")
+        XCTAssertFalse(app.staticTexts["Not set"].exists, "setup should not expose placeholder permission copy")
         assertActionSitsInBottomSafeArea("setup.continue", app: app)
 
         XCTAssertTrue(app.otherElements["setup.screenTime"].waitForExistence(timeout: 5))

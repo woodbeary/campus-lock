@@ -2,6 +2,10 @@ import CampusLockCore
 import Foundation
 import Observation
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 #if canImport(FamilyControls)
 import FamilyControls
 #endif
@@ -181,6 +185,13 @@ final class CampusLockStore {
     func confirmPermissionOnboarding() {
         guard canContinuePermissionOnboarding else { return }
         hasConfirmedPermissionOnboarding = true
+    }
+
+    func openSystemSettings() {
+        #if canImport(UIKit)
+        guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(settingsURL)
+        #endif
     }
 
     @discardableResult

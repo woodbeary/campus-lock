@@ -101,6 +101,9 @@ struct CampusBottomBar<Content: View>: View {
             .padding(.horizontal, CampusTheme.screenHorizontalPadding)
             .padding(.top, 10)
             .padding(.bottom, 10)
+            .background {
+                CampusTheme.background.ignoresSafeArea()
+            }
     }
 }
 

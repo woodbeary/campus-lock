@@ -54,9 +54,11 @@ struct SetupView: View {
                 symbol: "lock.app.dashed",
                 title: "Screen Time",
                 status: setupStatus(store.authorizationStatus, ready: store.screenTimeReady),
-                actionTitle: "Allow"
+                actionTitle: actionTitle(for: store.authorizationStatus)
             ) {
-                Task { await store.requestScreenTimeAuthorization() }
+                handlePermissionAction(store.authorizationStatus) {
+                    await store.requestScreenTimeAuthorization()
+                }
             }
             .accessibilityIdentifier("setup.screenTime")
         } else if !store.locationStatus.isUsable {
@@ -64,9 +66,11 @@ struct SetupView: View {
                 symbol: "location.circle",
                 title: "Location",
                 status: setupStatus(store.locationStatus, ready: store.locationStatus.isUsable),
-                actionTitle: store.isLocating ? "Waiting" : "Allow"
+                actionTitle: store.isLocating ? "Waiting" : actionTitle(for: store.locationStatus)
             ) {
-                Task { await store.requestLocationRefresh() }
+                handlePermissionAction(store.locationStatus) {
+                    await store.requestLocationRefresh()
+                }
             }
             .accessibilityIdentifier("setup.location")
         } else {
@@ -96,11 +100,31 @@ struct SetupView: View {
         if ready { return "Ready" }
         switch status {
         case .notDetermined:
-            return "Required"
+            return "Allow"
         case let .denied(message):
-            return message.isEmpty ? "Denied" : message
+            return message == "Allow Always" ? "Always" : "Denied"
         case .approved:
             return "Ready"
+        }
+    }
+
+    private func actionTitle(for status: PermissionStatus) -> String {
+        switch status {
+        case .notDetermined, .approved:
+            return "Allow"
+        case let .denied(message):
+            return message == "Allow Always" ? "Allow" : "Settings"
+        }
+    }
+
+    private func handlePermissionAction(
+        _ status: PermissionStatus,
+        request: @escaping () async -> Bool
+    ) {
+        if case let .denied(message) = status, message != "Allow Always" {
+            store.openSystemSettings()
+        } else {
+            Task { _ = await request() }
         }
     }
 }
