@@ -5,7 +5,7 @@ import Testing
 
 @Suite("Session timing")
 struct SessionTimingTests {
-    @Test("formats elapsed and remaining clocks")
+    @Test("formats elapsed clock")
     func formatsSessionClocks() {
         let start = Date(timeIntervalSince1970: 1_800_000_000)
         let session = FocusSession(
@@ -17,7 +17,6 @@ struct SessionTimingTests {
         let timing = SessionTiming(session: session, now: start.addingTimeInterval(125))
 
         #expect(timing.elapsedClock == "2:05")
-        #expect(timing.remainingClock == "44:55")
     }
 
     @Test("clamps negative timing to zero")
@@ -30,7 +29,6 @@ struct SessionTimingTests {
         )
 
         #expect(SessionTiming(session: session, now: start.addingTimeInterval(-10)).elapsedClock == "0:00")
-        #expect(SessionTiming(session: session, now: start.addingTimeInterval(90)).remainingClock == "0:00")
     }
 
     @Test("uses hour clock for long sessions")

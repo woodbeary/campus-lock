@@ -46,6 +46,21 @@
 	<string>Campus Lock uses your current location to draw the class radius.</string>
 	<key>NFCReaderUsageDescription</key>
 	<string>Campus Lock starts attendance when you hold iPhone near a class NFC tag.</string>
+	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+	<array>
+		<string>D2760000850101</string>
+		<string>315041592E5359532E4444463031</string>
+		<string>325041592E5359532E4444463031</string>
+		<string>A0000000031010</string>
+		<string>A0000000032010</string>
+		<string>A0000000041010</string>
+		<string>A0000000043060</string>
+		<string>A00000002501</string>
+		<string>A0000001523010</string>
+		<string>A0000000651010</string>
+		<string>A0000002771010</string>
+		<string>A000000333010101</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

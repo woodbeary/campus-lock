@@ -2,19 +2,13 @@ import Foundation
 
 public struct SessionTiming: Equatable, Sendable {
     public var elapsedSeconds: TimeInterval
-    public var remainingSeconds: TimeInterval
 
     public init(session: FocusSession, now: Date) {
         elapsedSeconds = max(0, now.timeIntervalSince(session.startedAt))
-        remainingSeconds = max(0, session.expectedEndAt.timeIntervalSince(now))
     }
 
     public var elapsedClock: String {
         Self.clock(elapsedSeconds)
-    }
-
-    public var remainingClock: String {
-        Self.clock(remainingSeconds)
     }
 
     public static func clock(_ seconds: TimeInterval) -> String {

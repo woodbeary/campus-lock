@@ -5,6 +5,7 @@ import Foundation
 @MainActor
 final class LocationController: NSObject, CLLocationManagerDelegate {
     var onLocationUpdate: ((Coordinate) -> Void)?
+    var onRegionExit: ((Coordinate) -> Void)?
     var onLocationFailure: (() -> Void)?
     var onAuthorizationChange: ((PermissionStatus) -> Void)?
 
@@ -83,7 +84,7 @@ final class LocationController: NSObject, CLLocationManagerDelegate {
         guard let location = manager.location else { return }
         let coordinate = Coordinate(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         Task { @MainActor in
-            onLocationUpdate?(coordinate)
+            onRegionExit?(coordinate)
         }
     }
 

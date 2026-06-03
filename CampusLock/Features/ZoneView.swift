@@ -26,6 +26,8 @@ struct ZoneView: View {
                     center: currentLocation,
                     radius: store.state.zone.radiusMeters
                 )
+                .padding(.horizontal, -CampusTheme.screenHorizontalPadding)
+                .accessibilityIdentifier("zone.map")
             } else {
                 LocationPendingCard(
                     status: store.locationStatus.label,
@@ -172,10 +174,10 @@ private struct ZoneMapCard: View {
                 .padding(.bottom, 14)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 198)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .frame(height: 420)
+        .clipShape(RoundedRectangle(cornerRadius: 34, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 34, style: .continuous)
                 .stroke(Color(.separator).opacity(0.24), lineWidth: 0.5)
         }
         .onAppear(perform: refreshCamera)

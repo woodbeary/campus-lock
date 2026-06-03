@@ -179,13 +179,11 @@ public struct FocusSession: Codable, Equatable, Sendable {
     public var classSession: ClassSession
     public var zone: CampusZone
     public var startedAt: Date
-    public var expectedEndAt: Date
 
     public init(classSession: ClassSession, zone: CampusZone, startedAt: Date) {
         self.classSession = classSession
         self.zone = zone
         self.startedAt = startedAt
-        self.expectedEndAt = startedAt.addingTimeInterval(TimeInterval(classSession.durationMinutes * 60))
     }
 }
 

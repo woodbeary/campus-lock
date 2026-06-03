@@ -20,4 +20,11 @@ enum CampusFeedback {
         UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.85)
         #endif
     }
+
+    @MainActor
+    static func outsideZone() {
+        #if canImport(UIKit)
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        #endif
+    }
 }

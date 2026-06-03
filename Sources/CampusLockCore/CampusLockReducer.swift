@@ -1,10 +1,16 @@
 import Foundation
 
+public enum ActiveZoneState: String, Codable, Equatable, Sendable {
+    case inside
+    case outside
+}
+
 public struct CampusLockState: Codable, Equatable, Sendable {
     public var isSetupComplete: Bool
     public var policy: AppPolicy
     public var zone: CampusZone
     public var activeSession: FocusSession?
+    public var activeZoneState: ActiveZoneState
     public var activeHallPass: HallPass?
     public var attendanceRecords: [AttendanceRecord]
     public var selectedClass: ClassSession
@@ -19,6 +25,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
             label: "Campus"
         ),
         activeSession: FocusSession? = nil,
+        activeZoneState: ActiveZoneState = .inside,
         activeHallPass: HallPass? = nil,
         attendanceRecords: [AttendanceRecord] = [],
         selectedClass: ClassSession = ClassSession.sampleSchedule(referenceDate: Date())[2],
@@ -28,6 +35,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
         self.policy = policy
         self.zone = zone
         self.activeSession = activeSession
+        self.activeZoneState = activeSession == nil ? .inside : activeZoneState
         self.activeHallPass = activeHallPass
         self.attendanceRecords = attendanceRecords
         self.selectedClass = selectedClass
@@ -41,7 +49,59 @@ public struct CampusLockState: Codable, Equatable, Sendable {
     }
 
     public var isLocked: Bool {
-        activeSession != nil
+        activeSession != nil && activeZoneState == .inside
+    }
+
+    public var isOutsideActiveZone: Bool {
+        activeSession != nil && activeZoneState == .outside
+    }
+
+    public var outsideDistanceMeters: Double? {
+        guard let activeSession, let currentLocation, activeZoneState == .outside else { return nil }
+        return max(0, activeSession.zone.distanceMeters(to: currentLocation) - activeSession.zone.radiusMeters)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case isSetupComplete
+        case policy
+        case zone
+        case activeSession
+        case activeZoneState
+        case activeHallPass
+        case attendanceRecords
+        case selectedClass
+        case currentLocation
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        isSetupComplete = try container.decode(Bool.self, forKey: .isSetupComplete)
+        policy = try container.decode(AppPolicy.self, forKey: .policy)
+        zone = try container.decode(CampusZone.self, forKey: .zone)
+        activeSession = try container.decodeIfPresent(FocusSession.self, forKey: .activeSession)
+        if activeSession == nil {
+            activeZoneState = .inside
+        } else {
+            activeZoneState = try container.decodeIfPresent(ActiveZoneState.self, forKey: .activeZoneState) ?? .inside
+        }
+        activeHallPass = try container.decodeIfPresent(HallPass.self, forKey: .activeHallPass)
+        attendanceRecords = try container.decode([AttendanceRecord].self, forKey: .attendanceRecords)
+        selectedClass = try container.decode(ClassSession.self, forKey: .selectedClass)
+        currentLocation = try container.decodeIfPresent(Coordinate.self, forKey: .currentLocation)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(isSetupComplete, forKey: .isSetupComplete)
+        try container.encode(policy, forKey: .policy)
+        try container.encode(zone, forKey: .zone)
+        try container.encodeIfPresent(activeSession, forKey: .activeSession)
+        let encodedZoneState: ActiveZoneState = activeSession == nil ? .inside : activeZoneState
+        try container.encode(encodedZoneState, forKey: .activeZoneState)
+        try container.encodeIfPresent(activeHallPass, forKey: .activeHallPass)
+        try container.encode(attendanceRecords, forKey: .attendanceRecords)
+        try container.encode(selectedClass, forKey: .selectedClass)
+        try container.encodeIfPresent(currentLocation, forKey: .currentLocation)
     }
 }
 
@@ -50,12 +110,14 @@ public enum CampusLockEvent: Equatable, Sendable {
     case updatePolicy(AppPolicy)
     case updateRadius(Double)
     case updateLocation(Coordinate)
+    case updateCurrentLocation(Coordinate)
     case startFocus(Date)
     case manualUnlock(Date)
     case leaveZone(Coordinate, Date)
     case selectClass(ClassSession)
     case startHallPass(Date, TimeInterval)
     case endHallPass(Date)
+    case resetAttendanceData
 }
 
 public struct CampusLockReducer: Sendable {
@@ -76,12 +138,21 @@ public struct CampusLockReducer: Sendable {
             state.currentLocation = coordinate
             state.zone.center = coordinate
 
+        case let .updateCurrentLocation(coordinate):
+            state.currentLocation = coordinate
+            if let activeSession = state.activeSession,
+               state.activeZoneState == .outside,
+               activeSession.zone.contains(coordinate) {
+                state.activeZoneState = .inside
+            }
+
         case let .startFocus(date):
             guard state.isSetupComplete else { return }
             guard state.activeSession == nil else { return }
-            guard !hasRecordToday(for: state.selectedClass, at: date, in: state.attendanceRecords) else { return }
+            guard !hasCompletedRecordToday(for: state.selectedClass, at: date, in: state.attendanceRecords) else { return }
             let session = FocusSession(classSession: state.selectedClass, zone: state.zone, startedAt: date)
             state.activeSession = session
+            state.activeZoneState = .inside
             state.activeHallPass = nil
             state.attendanceRecords.append(
                 AttendanceRecord(session: state.selectedClass, checkedInAt: date, state: .present)
@@ -90,11 +161,12 @@ public struct CampusLockReducer: Sendable {
         case let .manualUnlock(date):
             checkout(state: &state, at: date, state: .manualUnlock)
 
-        case let .leaveZone(coordinate, date):
+        case let .leaveZone(coordinate, _):
             state.currentLocation = coordinate
             guard let activeSession = state.activeSession else { return }
             if !activeSession.zone.contains(coordinate) {
-                checkout(state: &state, at: date, state: .checkedOut)
+                state.activeZoneState = .outside
+                state.activeHallPass = nil
             }
 
         case let .selectClass(classSession):
@@ -102,17 +174,24 @@ public struct CampusLockReducer: Sendable {
             state.selectedClass = classSession
 
         case let .startHallPass(date, duration):
-            guard state.activeSession != nil else { return }
+            guard state.isLocked else { return }
             state.activeHallPass = HallPass(startedAt: date, durationSeconds: duration)
 
         case .endHallPass:
             state.activeHallPass = nil
+
+        case .resetAttendanceData:
+            state.activeSession = nil
+            state.activeZoneState = .inside
+            state.activeHallPass = nil
+            state.attendanceRecords = []
         }
     }
 
     private func checkout(state: inout CampusLockState, at date: Date, state attendanceState: AttendanceState) {
         guard state.activeSession != nil else { return }
         state.activeSession = nil
+        state.activeZoneState = .inside
         state.activeHallPass = nil
         guard var latestRecord = state.attendanceRecords.last else { return }
         latestRecord.checkedOutAt = date
@@ -120,7 +199,7 @@ public struct CampusLockReducer: Sendable {
         state.attendanceRecords[state.attendanceRecords.count - 1] = latestRecord
     }
 
-    private func hasRecordToday(
+    private func hasCompletedRecordToday(
         for classSession: ClassSession,
         at date: Date,
         in records: [AttendanceRecord],
@@ -129,6 +208,7 @@ public struct CampusLockReducer: Sendable {
         records.contains { record in
             record.session.id == classSession.id
                 && calendar.isDate(record.checkedInAt, inSameDayAs: date)
+                && record.checkedOutAt != nil
         }
     }
 }

@@ -8,6 +8,8 @@ struct LockView: View {
         Group {
             if store.state.isLocked {
                 FocusActiveView()
+            } else if store.state.isOutsideActiveZone {
+                FocusOutsideView()
             } else if case let .unlocked(lastRecord) = store.state.lockState, lastRecord != nil {
                 UnlockedView(record: lastRecord)
             } else {
@@ -169,7 +171,7 @@ private struct FocusActiveView: View {
 
                     HStack(spacing: 12) {
                         MetricCard(value: timing(at: timeline.date).elapsedClock, label: "Focus", dark: true)
-                        MetricCard(value: timing(at: timeline.date).remainingClock, label: "Left", dark: true)
+                        MetricCard(value: averageSessionValue, label: "Avg", dark: true)
                     }
 
                     allowedCard
@@ -241,6 +243,80 @@ private struct FocusActiveView: View {
             )
         }
         return SessionTiming(session: activeSession, now: date)
+    }
+
+    private var averageSessionValue: String {
+        let durations = store.state.attendanceRecords.compactMap { record -> TimeInterval? in
+            guard let checkedOutAt = record.checkedOutAt else { return nil }
+            return max(0, checkedOutAt.timeIntervalSince(record.checkedInAt))
+        }
+        guard !durations.isEmpty else { return "—" }
+        return SessionTiming.clock(durations.reduce(0, +) / Double(durations.count))
+    }
+}
+
+private struct FocusOutsideView: View {
+    @Environment(CampusLockStore.self) private var store
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            CampusScreen(alignment: .center) {
+                outsideMark
+
+                VStack(spacing: 5) {
+                    Text("Outside zone")
+                        .font(.largeTitle.weight(.semibold))
+                        .accessibilityIdentifier("lock.outsideTitle")
+                    Text("Apps available")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack(spacing: 12) {
+                    MetricCard(value: timing(at: timeline.date).elapsedClock, label: "Focus")
+                    MetricCard(value: outsideDistanceText, label: "outside")
+                }
+            }
+            .campusFixedAction {
+                Button {
+                    store.manualUnlock()
+                } label: {
+                    Label("Exit", systemImage: "arrow.up.circle.fill")
+                }
+                .campusPrimaryAction()
+                .accessibilityIdentifier("lock.exitOutside")
+            }
+        }
+    }
+
+    private var outsideMark: some View {
+        Circle()
+            .stroke(CampusTheme.warning, lineWidth: 5)
+            .frame(width: 142, height: 142)
+            .overlay {
+                Image(systemName: "location.slash.fill")
+                    .font(.system(size: 42, weight: .semibold))
+                    .foregroundStyle(CampusTheme.warning)
+            }
+    }
+
+    private func timing(at date: Date) -> SessionTiming {
+        guard let activeSession = store.state.activeSession else {
+            return SessionTiming(
+                session: FocusSession(classSession: store.state.selectedClass, zone: store.state.zone, startedAt: date),
+                now: date
+            )
+        }
+        return SessionTiming(session: activeSession, now: date)
+    }
+
+    private var outsideDistanceText: String {
+        guard let meters = store.state.outsideDistanceMeters else { return "—" }
+        let feet = meters * 3.28084
+        if feet < 1_000 {
+            return "\(max(1, Int(feet.rounded()))) ft"
+        }
+        return String(format: "%.1f mi", feet / 5_280)
     }
 }
 

@@ -6,6 +6,7 @@ enum CampusTheme {
     static let elevated = Color(.secondarySystemGroupedBackground)
     static let accent = Color.blue
     static let success = Color.green
+    static let warning = Color.orange
     static let screenHorizontalPadding: CGFloat = 20
     static let screenTopPadding: CGFloat = 18
     static let screenSpacing: CGFloat = 18
@@ -18,10 +19,16 @@ enum CampusTheme {
 
 struct CampusScreen<Content: View>: View {
     private let alignment: HorizontalAlignment
+    private let background: Color
     private let content: Content
 
-    init(alignment: HorizontalAlignment = .leading, @ViewBuilder content: () -> Content) {
+    init(
+        alignment: HorizontalAlignment = .leading,
+        background: Color = CampusTheme.background,
+        @ViewBuilder content: () -> Content
+    ) {
         self.alignment = alignment
+        self.background = background
         self.content = content()
     }
 
@@ -39,7 +46,7 @@ struct CampusScreen<Content: View>: View {
         }
         .contentMargins(.top, 0, for: .scrollContent)
         .scrollDismissesKeyboard(.interactively)
-        .background(CampusTheme.background)
+        .background(background)
     }
 }
 
@@ -88,9 +95,11 @@ struct CampusScreenHeader: View {
 }
 
 struct CampusBottomBar<Content: View>: View {
+    private let background: Color
     private let content: Content
 
-    init(@ViewBuilder content: () -> Content) {
+    init(background: Color = CampusTheme.background, @ViewBuilder content: () -> Content) {
+        self.background = background
         self.content = content()
     }
 
@@ -102,7 +111,7 @@ struct CampusBottomBar<Content: View>: View {
             .padding(.top, 10)
             .padding(.bottom, 10)
             .background {
-                CampusTheme.background.ignoresSafeArea()
+                background.ignoresSafeArea()
             }
     }
 }
@@ -193,9 +202,12 @@ extension View {
         modifier(CampusLoadInModifier())
     }
 
-    func campusFixedAction<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+    func campusFixedAction<Content: View>(
+        background: Color = CampusTheme.background,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
         safeAreaInset(edge: .bottom, spacing: 0) {
-            CampusBottomBar {
+            CampusBottomBar(background: background) {
                 content()
             }
         }

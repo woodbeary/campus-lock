@@ -52,6 +52,10 @@ final class CampusLockUITests: XCTestCase {
         app.buttons["attendance.nfc.manualEnter"].tap()
 
         XCTAssertFalse(app.buttons["attendance.enter"].exists)
+        XCTAssertFalse(app.buttons["attendance.done"].exists, "active class should not be marked done while locked")
+        XCTAssertTrue(app.otherElements["attendance.active.panel"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["attendance.active.elapsed"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["attendance.active.average"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["attendance.hallPass"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["attendance.exit"].waitForExistence(timeout: 5))
         assertActionSitsInBottomSafeArea("attendance.exit", app: app)
@@ -80,6 +84,7 @@ final class CampusLockUITests: XCTestCase {
         XCTAssertTrue(app.buttons["apps.chooseSpecific"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["settings.zone"].exists)
         XCTAssertTrue(app.buttons["settings.stats"].exists)
+        XCTAssertTrue(app.buttons["settings.reset"].exists)
         XCTAssertFalse(app.staticTexts["Emergency Safe"].exists)
         XCTAssertFalse(app.otherElements["footer.menu"].exists)
         XCTAssertFalse(app.buttons["tab.stats"].exists)

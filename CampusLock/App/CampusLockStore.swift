@@ -63,6 +63,9 @@ final class CampusLockStore {
         locationController.onLocationUpdate = { [weak self] coordinate in
             self?.handleLocationUpdate(coordinate)
         }
+        locationController.onRegionExit = { [weak self] coordinate in
+            self?.handleRegionExit(coordinate)
+        }
         locationController.onLocationFailure = { [weak self] in
             self?.isLocating = false
             self?.isStartingFocus = false
@@ -151,7 +154,7 @@ final class CampusLockStore {
     }
 
     var canStartFocus: Bool {
-        state.isSetupComplete && screenTimeReady && locationStatus.isUsable && state.currentLocation != nil
+        state.activeSession == nil && state.isSetupComplete && screenTimeReady && locationStatus.isUsable && state.currentLocation != nil
     }
 
     func refreshRuntimeStatus() async {
@@ -281,10 +284,6 @@ final class CampusLockStore {
             beginFocus()
             return
         }
-        if state.currentLocation != nil {
-            beginFocus()
-            return
-        }
 
         isStartingFocus = true
         pendingFocusStart = true
@@ -307,7 +306,7 @@ final class CampusLockStore {
     }
 
     func startNFCEntryScan() {
-        guard !state.isLocked else { return }
+        guard state.activeSession == nil else { return }
         if isUITesting {
             nfcScanState = .scanning
             return
@@ -364,6 +363,16 @@ final class CampusLockStore {
         applyShield()
     }
 
+    func resetAttendanceData() {
+        focusStartTask?.cancel()
+        pendingFocusStart = false
+        isStartingFocus = false
+        nfcSessionController.cancel()
+        nfcScanState = .idle
+        apply(.resetAttendanceData)
+        applyShield()
+    }
+
     func expireHallPassIfNeeded(at date: Date) {
         guard let hallPass = state.activeHallPass, !hallPass.isActive(at: date) else { return }
         apply(.endHallPass(date))
@@ -384,13 +393,27 @@ final class CampusLockStore {
         } else if state.activeSession == nil {
             apply(.updateLocation(coordinate))
         } else {
-            let wasLocked = state.isLocked
-            apply(.leaveZone(coordinate, Date()))
-            applyShield()
-            if wasLocked && !state.isLocked {
-                CampusFeedback.unlocked()
-            }
+            handleActiveLocationUpdate(coordinate)
         }
+    }
+
+    func handleRegionExit(_ coordinate: Coordinate) {
+        guard let activeSession = state.activeSession else {
+            apply(.updateLocation(coordinate))
+            return
+        }
+        let now = Date()
+        let elapsedSeconds = now.timeIntervalSince(activeSession.startedAt)
+        let exitDistance = activeSession.zone.distanceMeters(to: coordinate)
+        let exitThreshold = max(activeSession.zone.radiusMeters + 35, activeSession.zone.radiusMeters * 1.2)
+        guard elapsedSeconds >= 20, exitDistance >= exitThreshold else {
+            apply(.updateCurrentLocation(coordinate))
+            return
+        }
+        let wasLocked = state.isLocked
+        let wasOutside = state.isOutsideActiveZone
+        apply(.leaveZone(coordinate, now))
+        handleZoneTransition(wasLocked: wasLocked, wasOutside: wasOutside)
     }
 
     func handleLocationAuthorizationChange(_ status: PermissionStatus) {
@@ -405,6 +428,25 @@ final class CampusLockStore {
         repository.save(state)
     }
 
+    private func handleActiveLocationUpdate(_ coordinate: Coordinate) {
+        guard let activeSession = state.activeSession else {
+            apply(.updateLocation(coordinate))
+            return
+        }
+        let wasLocked = state.isLocked
+        let wasOutside = state.isOutsideActiveZone
+        let now = Date()
+        let elapsedSeconds = now.timeIntervalSince(activeSession.startedAt)
+        let exitDistance = activeSession.zone.distanceMeters(to: coordinate)
+        let exitThreshold = max(activeSession.zone.radiusMeters + 35, activeSession.zone.radiusMeters * 1.2)
+        if !state.isOutsideActiveZone, elapsedSeconds >= 20, exitDistance >= exitThreshold {
+            apply(.leaveZone(coordinate, now))
+        } else {
+            apply(.updateCurrentLocation(coordinate))
+        }
+        handleZoneTransition(wasLocked: wasLocked, wasOutside: wasOutside)
+    }
+
     private func applyShield() {
         let hallPassIsActive = state.activeHallPass?.isActive(at: Date()) == true
         let shouldShield = state.isLocked && !hallPassIsActive
@@ -413,6 +455,16 @@ final class CampusLockStore {
         #else
         screenTimeController.applyShield(isLocked: shouldShield)
         #endif
+    }
+
+    private func handleZoneTransition(wasLocked: Bool, wasOutside: Bool) {
+        guard wasLocked != state.isLocked || wasOutside != state.isOutsideActiveZone else { return }
+        applyShield()
+        if !wasLocked && state.isLocked {
+            CampusFeedback.locked()
+        } else if wasLocked && !state.isLocked && state.isOutsideActiveZone {
+            CampusFeedback.outsideZone()
+        }
     }
 
     private static func canonicalizeClassSelection(_ state: CampusLockState) -> CampusLockState {

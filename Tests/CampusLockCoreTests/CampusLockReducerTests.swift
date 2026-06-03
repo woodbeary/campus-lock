@@ -32,8 +32,8 @@ struct CampusLockReducerTests {
         #expect(state.isLocked)
     }
 
-    @Test("leaving radius checks out and unlocks")
-    func leavingRadiusUnlocks() throws {
+    @Test("leaving radius unlocks without ending attendance")
+    func leavingRadiusUnlocksWithoutEndingAttendance() throws {
         var state = CampusLockState(isSetupComplete: true)
         state.zone = CampusZone(center: Coordinate(latitude: 33.0, longitude: -117.0), radiusMeters: 100)
         reducer.reduce(&state, event: .startFocus(start))
@@ -43,10 +43,13 @@ struct CampusLockReducerTests {
             event: .leaveZone(Coordinate(latitude: 33.003, longitude: -117.0), start.addingTimeInterval(600))
         )
 
-        #expect(state.activeSession == nil)
+        #expect(state.activeSession != nil)
+        #expect(state.activeZoneState == .outside)
+        #expect(!state.isLocked)
+        #expect((state.outsideDistanceMeters ?? 0) > 0)
         let record = try #require(state.attendanceRecords.last)
-        #expect(record.state == .checkedOut)
-        #expect(record.checkedOutAt == start.addingTimeInterval(600))
+        #expect(record.state == .present)
+        #expect(record.checkedOutAt == nil)
     }
 
     @Test("inside radius keeps focus locked")
@@ -61,6 +64,29 @@ struct CampusLockReducerTests {
         )
 
         #expect(state.activeSession != nil)
+        #expect(state.activeZoneState == .inside)
+        #expect(state.isLocked)
+        #expect(state.attendanceRecords.last?.checkedOutAt == nil)
+    }
+
+    @Test("returning to zone relocks the active session")
+    func returningToZoneRelocksActiveSession() {
+        var state = CampusLockState(isSetupComplete: true)
+        state.zone = CampusZone(center: Coordinate(latitude: 33.0, longitude: -117.0), radiusMeters: 100)
+        reducer.reduce(&state, event: .startFocus(start))
+        reducer.reduce(
+            &state,
+            event: .leaveZone(Coordinate(latitude: 33.003, longitude: -117.0), start.addingTimeInterval(600))
+        )
+
+        reducer.reduce(
+            &state,
+            event: .updateCurrentLocation(Coordinate(latitude: 33.0002, longitude: -117.0))
+        )
+
+        #expect(state.activeSession != nil)
+        #expect(state.activeZoneState == .inside)
+        #expect(state.isLocked)
         #expect(state.attendanceRecords.last?.checkedOutAt == nil)
     }
 
@@ -72,6 +98,7 @@ struct CampusLockReducerTests {
         reducer.reduce(&state, event: .manualUnlock(start.addingTimeInterval(180)))
 
         #expect(state.activeSession == nil)
+        #expect(state.activeZoneState == .inside)
         let record = try #require(state.attendanceRecords.last)
         #expect(record.state == .manualUnlock)
         #expect(record.checkedOutAt == start.addingTimeInterval(180))
@@ -87,6 +114,47 @@ struct CampusLockReducerTests {
 
         #expect(state.activeSession == nil)
         #expect(state.attendanceRecords.count == 1)
+    }
+
+    @Test("in-progress attendance record does not count as done")
+    func inProgressRecordDoesNotCountAsDone() {
+        var state = CampusLockState(isSetupComplete: true)
+        state.attendanceRecords = [
+            AttendanceRecord(session: state.selectedClass, checkedInAt: start, state: .present)
+        ]
+
+        reducer.reduce(&state, event: .startFocus(start.addingTimeInterval(300)))
+
+        #expect(state.activeSession != nil)
+        #expect(state.attendanceRecords.count == 2)
+    }
+
+    @Test("current location update does not move saved zone")
+    func currentLocationUpdateDoesNotMoveSavedZone() {
+        var state = CampusLockState(isSetupComplete: true)
+        let originalCenter = state.zone.center
+
+        reducer.reduce(
+            &state,
+            event: .updateCurrentLocation(Coordinate(latitude: 34.0, longitude: -118.0))
+        )
+
+        #expect(state.currentLocation == Coordinate(latitude: 34.0, longitude: -118.0))
+        #expect(state.zone.center == originalCenter)
+    }
+
+    @Test("reset clears attendance without removing setup")
+    func resetClearsAttendanceWithoutRemovingSetup() {
+        var state = CampusLockState(isSetupComplete: true)
+        reducer.reduce(&state, event: .startFocus(start))
+        reducer.reduce(&state, event: .startHallPass(start.addingTimeInterval(60), 300))
+
+        reducer.reduce(&state, event: .resetAttendanceData)
+
+        #expect(state.isSetupComplete)
+        #expect(state.activeSession == nil)
+        #expect(state.activeHallPass == nil)
+        #expect(state.attendanceRecords.isEmpty)
     }
 
     @Test("hall pass pauses during an active class only")
@@ -106,6 +174,34 @@ struct CampusLockReducerTests {
         reducer.reduce(&state, event: .endHallPass(start.addingTimeInterval(120)))
         #expect(state.activeHallPass == nil)
         #expect(state.activeSession != nil)
+    }
+
+    @Test("hall pass cannot start outside the zone")
+    func hallPassRequiresLockedZone() {
+        var state = CampusLockState(isSetupComplete: true)
+        state.zone = CampusZone(center: Coordinate(latitude: 33.0, longitude: -117.0), radiusMeters: 100)
+        reducer.reduce(&state, event: .startFocus(start))
+        reducer.reduce(
+            &state,
+            event: .leaveZone(Coordinate(latitude: 33.003, longitude: -117.0), start.addingTimeInterval(600))
+        )
+
+        reducer.reduce(&state, event: .startHallPass(start.addingTimeInterval(700), 300))
+
+        #expect(state.activeSession != nil)
+        #expect(state.activeHallPass == nil)
+    }
+
+    @Test("legacy state decodes with inside zone state")
+    func legacyStateDecodesWithInsideZoneState() throws {
+        let data = try JSONEncoder().encode(CampusLockState(isSetupComplete: true))
+        var object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        object.removeValue(forKey: "activeZoneState")
+        let legacyData = try JSONSerialization.data(withJSONObject: object)
+
+        let decoded = try JSONDecoder().decode(CampusLockState.self, from: legacyData)
+
+        #expect(decoded.activeZoneState == .inside)
     }
 
     @Test("safety critical categories cannot be blocked", arguments: [AppCategory.phone, .messages, .maps])
