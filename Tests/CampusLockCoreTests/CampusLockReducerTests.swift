@@ -157,6 +157,51 @@ struct CampusLockReducerTests {
         #expect(state.attendanceRecords.isEmpty)
     }
 
+    @Test("profile updates name and school")
+    func profileUpdatesNameAndSchool() throws {
+        var state = CampusLockState()
+        let school = CampusSchoolSelection(
+            name: "University High School",
+            address: "Irvine, CA",
+            coordinate: Coordinate(latitude: 33.6463, longitude: -117.7779)
+        )
+
+        reducer.reduce(&state, event: .updateDisplayName("  Alex  "))
+        reducer.reduce(&state, event: .selectSchool(school))
+
+        #expect(state.profile.displayName == "Alex")
+        #expect(state.profile.hasDisplayName)
+        let selectedSchool = try #require(state.profile.school)
+        #expect(selectedSchool == school)
+    }
+
+    @Test("onboarding restart clears session and setup while preserving zone")
+    func onboardingRestartClearsSessionAndSetupWhilePreservingZone() {
+        var state = CampusLockState(isSetupComplete: true)
+        let currentLocation = Coordinate(latitude: 33.7, longitude: -117.8)
+        state.profile = CampusProfile(
+            displayName: "Alex",
+            school: CampusSchoolSelection(name: "University High School", address: "Irvine, CA")
+        )
+        reducer.reduce(&state, event: .updateLocation(currentLocation))
+        reducer.reduce(&state, event: .updateRadius(250))
+        let zone = state.zone
+        reducer.reduce(&state, event: .startFocus(start))
+        reducer.reduce(&state, event: .startHallPass(start.addingTimeInterval(60), 300))
+
+        reducer.reduce(&state, event: .restartOnboarding)
+
+        #expect(!state.isSetupComplete)
+        #expect(state.activeSession == nil)
+        #expect(state.activeZoneState == .inside)
+        #expect(state.activeHallPass == nil)
+        #expect(state.attendanceRecords.isEmpty)
+        #expect(state.currentLocation == currentLocation)
+        #expect(state.zone == zone)
+        #expect(!state.profile.hasDisplayName)
+        #expect(!state.profile.hasSchool)
+    }
+
     @Test("hall pass pauses during an active class only")
     func hallPassRequiresActiveClass() throws {
         var state = CampusLockState(isSetupComplete: true)
@@ -197,11 +242,13 @@ struct CampusLockReducerTests {
         let data = try JSONEncoder().encode(CampusLockState(isSetupComplete: true))
         var object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
         object.removeValue(forKey: "activeZoneState")
+        object.removeValue(forKey: "profile")
         let legacyData = try JSONSerialization.data(withJSONObject: object)
 
         let decoded = try JSONDecoder().decode(CampusLockState.self, from: legacyData)
 
         #expect(decoded.activeZoneState == .inside)
+        #expect(!decoded.profile.hasDisplayName)
     }
 
     @Test("safety critical categories cannot be blocked", arguments: [AppCategory.phone, .messages, .maps])

@@ -6,6 +6,7 @@ import FamilyControls
 
 struct AppsView: View {
     @Environment(CampusLockStore.self) private var store
+    @Environment(\.dismiss) private var dismiss
     @State private var sheet: SettingsSheet?
     @State private var resetConfirmationIsPresented = false
 
@@ -53,13 +54,15 @@ struct AppsView: View {
             }
         }
         .sensoryFeedback(.selection, trigger: sheet)
-        .alert("Reset?", isPresented: $resetConfirmationIsPresented) {
-            Button("Cancel", role: .cancel) {}
-            Button("Reset", role: .destructive) {
+        .confirmationDialog("Reset", isPresented: $resetConfirmationIsPresented, titleVisibility: .visible) {
+            Button("Clear Data", role: .destructive) {
                 store.resetAttendanceData()
             }
-        } message: {
-            Text("Clears attendance and stats.")
+            Button("Restart Onboarding", role: .destructive) {
+                store.restartOnboarding()
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) {}
         }
         #if canImport(FamilyControls)
         .familyActivityPicker(isPresented: $store.isShowingAppPicker, selection: $store.activitySelection)

@@ -142,7 +142,7 @@ private struct LocationPendingCard: View {
     }
 }
 
-private struct ZoneMapCard: View {
+struct ZoneMapCard: View {
     var center: Coordinate
     var radius: Double
     @State private var cameraPosition: MapCameraPosition = .automatic

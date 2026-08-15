@@ -83,7 +83,7 @@ struct AttendanceView: View {
 
     private var header: some View {
         HStack(alignment: .center) {
-            Text("Alex")
+            Text(store.displayName)
                 .font(.largeTitle.weight(.semibold))
                 .foregroundStyle(store.state.isLocked ? .white : .primary)
                 .lineLimit(1)

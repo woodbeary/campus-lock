@@ -82,6 +82,8 @@ final class CampusLockStore {
             self?.startFocus()
         }
         if isUITesting && !requiresSetupInUITests {
+            apply(.updateDisplayName("Alex"))
+            apply(.selectSchool(CampusSchoolSelection(name: "University High School", address: "Irvine, CA")))
             apply(.updateLocation(Coordinate(latitude: 33.6405, longitude: -117.8443)))
             apply(.completeSetup)
         }
@@ -137,16 +139,21 @@ final class CampusLockStore {
         hasShieldSelection ? "selected" : "focus"
     }
 
+    var displayName: String {
+        let name = state.profile.trimmedDisplayName
+        return name.isEmpty ? "Alex" : name
+    }
+
     var shouldShowSetup: Bool {
-        shouldShowPermissionSetup || shouldShowZoneOnboarding
+        !state.isSetupComplete || !state.profile.hasDisplayName || !state.profile.hasSchool
     }
 
     var shouldShowPermissionSetup: Bool {
-        !screenTimeReady || !locationStatus.isUsable || (!state.isSetupComplete && !hasConfirmedPermissionOnboarding)
+        shouldShowSetup
     }
 
     var shouldShowZoneOnboarding: Bool {
-        screenTimeReady && locationStatus.isUsable && !state.isSetupComplete && hasConfirmedPermissionOnboarding
+        false
     }
 
     var canContinuePermissionOnboarding: Bool {
@@ -198,6 +205,14 @@ final class CampusLockStore {
         hasConfirmedPermissionOnboarding = true
     }
 
+    func updateDisplayName(_ displayName: String) {
+        apply(.updateDisplayName(displayName))
+    }
+
+    func selectSchool(_ school: CampusSchoolSelection) {
+        apply(.selectSchool(school))
+    }
+
     func openSystemSettings() {
         #if canImport(UIKit)
         guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
@@ -207,6 +222,7 @@ final class CampusLockStore {
 
     @discardableResult
     func finishZoneSetup(selectHome: Bool = true) -> Bool {
+        guard state.profile.hasDisplayName && state.profile.hasSchool else { return false }
         guard screenTimeReady && locationStatus.isUsable && state.currentLocation != nil else { return false }
         apply(.completeSetup)
         locationController.monitor(zone: state.zone)
@@ -373,6 +389,18 @@ final class CampusLockStore {
         applyShield()
     }
 
+    func restartOnboarding() {
+        focusStartTask?.cancel()
+        pendingFocusStart = false
+        isStartingFocus = false
+        selectedTab = .attendance
+        hasConfirmedPermissionOnboarding = false
+        nfcSessionController.cancel()
+        nfcScanState = .idle
+        apply(.restartOnboarding)
+        applyShield()
+    }
+
     func expireHallPassIfNeeded(at date: Date) {
         guard let hallPass = state.activeHallPass, !hallPass.isActive(at: date) else { return }
         apply(.endHallPass(date))
@@ -469,6 +497,9 @@ final class CampusLockStore {
 
     private static func canonicalizeClassSelection(_ state: CampusLockState) -> CampusLockState {
         var state = state
+        if state.isSetupComplete && (!state.profile.hasDisplayName || !state.profile.hasSchool) {
+            state.isSetupComplete = false
+        }
         if state.isSetupComplete && state.currentLocation == nil {
             state.isSetupComplete = false
         }

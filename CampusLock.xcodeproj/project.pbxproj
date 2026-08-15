@@ -18,6 +18,7 @@
 		26243673C0194C653B6C2FDE /* CampusLockSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18853531BF079B3697D5466D /* CampusLockSmokeTests.swift */; };
 		33CAEF30BC2BE641F2C02D0E /* ZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 714E7E0CDEC37CC2B7C063B9 /* ZoneView.swift */; };
 		3DF0DE26162A0C43037ADB27 /* NFCSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77EC25EF7CDBEF889E601883 /* NFCSessionController.swift */; };
+		42A69B7AED1E5CD13FF5B7C1 /* SchoolSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEB5AEC285E331CF9625BB /* SchoolSearchService.swift */; };
 		4F549B5DD6EBBBF1A61FBE9E /* AppsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F50021C9C6ACEEB4D1C210 /* AppsView.swift */; };
 		5CBDA98FA80DBF076CA0A520 /* AttendanceExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C47FB60931AC0F33EB4C7AF /* AttendanceExporterTests.swift */; };
 		5D3AD0C9B0D6AD9191E51F55 /* CampusLockCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFEA27A3D133FD8187EBBF34 /* CampusLockCore.framework */; };
@@ -150,6 +151,7 @@
 		714E7E0CDEC37CC2B7C063B9 /* ZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneView.swift; sourceTree = "<group>"; };
 		77EC25EF7CDBEF889E601883 /* NFCSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCSessionController.swift; sourceTree = "<group>"; };
 		80F92143C14B779D028B4F28 /* CampusLockShieldAction.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CampusLockShieldAction.entitlements; sourceTree = "<group>"; };
+		83CEB5AEC285E331CF9625BB /* SchoolSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchoolSearchService.swift; sourceTree = "<group>"; };
 		8715E83811BE37991B71D3F2 /* CampusFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusFeedback.swift; sourceTree = "<group>"; };
 		877C939408154B9E3E4A70D6 /* CampusLockUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusLockUITests.swift; sourceTree = "<group>"; };
 		A5F50021C9C6ACEEB4D1C210 /* AppsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsView.swift; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				0E3BA9BCFE68092B9C1CD4F7 /* CampusLockRepository.swift */,
 				267E60CC9CDFFEC0DD5320F0 /* LocationController.swift */,
 				77EC25EF7CDBEF889E601883 /* NFCSessionController.swift */,
+				83CEB5AEC285E331CF9625BB /* SchoolSearchService.swift */,
 				D6B190C7D433828D64863CBD /* ScreenTimeController.swift */,
 			);
 			path = Services;
@@ -546,6 +549,7 @@
 				82FC53C0E7BD1FBBF1E142D2 /* LockView.swift in Sources */,
 				3DF0DE26162A0C43037ADB27 /* NFCSessionController.swift in Sources */,
 				B43E490EA1F28A35AE61846F /* RootView.swift in Sources */,
+				42A69B7AED1E5CD13FF5B7C1 /* SchoolSearchService.swift in Sources */,
 				F329C615E2543787FDAC6E0D /* ScreenTimeController.swift in Sources */,
 				11AB2754EF899A59B9A6ABB4 /* SetupView.swift in Sources */,
 				33CAEF30BC2BE641F2C02D0E /* ZoneView.swift in Sources */,

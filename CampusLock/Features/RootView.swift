@@ -5,10 +5,8 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if store.shouldShowPermissionSetup {
+            if store.shouldShowSetup {
                 SetupView()
-            } else if store.shouldShowZoneOnboarding {
-                ZoneView(mode: .onboarding)
             } else {
                 ZStack {
                     CampusTheme.background.ignoresSafeArea()

@@ -37,6 +37,47 @@ public struct CampusZone: Codable, Equatable, Sendable {
     }
 }
 
+public struct CampusSchoolSelection: Codable, Equatable, Identifiable, Sendable {
+    public var id: UUID
+    public var name: String
+    public var address: String
+    public var coordinate: Coordinate?
+
+    public init(
+        id: UUID = UUID(),
+        name: String,
+        address: String = "",
+        coordinate: Coordinate? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.address = address
+        self.coordinate = coordinate
+    }
+}
+
+public struct CampusProfile: Codable, Equatable, Sendable {
+    public var displayName: String
+    public var school: CampusSchoolSelection?
+
+    public init(displayName: String = "", school: CampusSchoolSelection? = nil) {
+        self.displayName = displayName
+        self.school = school
+    }
+
+    public var trimmedDisplayName: String {
+        displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    public var hasDisplayName: Bool {
+        !trimmedDisplayName.isEmpty
+    }
+
+    public var hasSchool: Bool {
+        school != nil
+    }
+}
+
 public enum AppCategory: String, CaseIterable, Codable, Identifiable, Sendable {
     case social
     case video

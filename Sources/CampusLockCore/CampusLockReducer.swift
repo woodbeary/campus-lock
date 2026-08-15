@@ -7,6 +7,7 @@ public enum ActiveZoneState: String, Codable, Equatable, Sendable {
 
 public struct CampusLockState: Codable, Equatable, Sendable {
     public var isSetupComplete: Bool
+    public var profile: CampusProfile
     public var policy: AppPolicy
     public var zone: CampusZone
     public var activeSession: FocusSession?
@@ -18,6 +19,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
 
     public init(
         isSetupComplete: Bool = false,
+        profile: CampusProfile = CampusProfile(),
         policy: AppPolicy = AppPolicy(),
         zone: CampusZone = CampusZone(
             center: Coordinate(latitude: 33.6405, longitude: -117.8443),
@@ -32,6 +34,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
         currentLocation: Coordinate? = nil
     ) {
         self.isSetupComplete = isSetupComplete
+        self.profile = profile
         self.policy = policy
         self.zone = zone
         self.activeSession = activeSession
@@ -63,6 +66,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case isSetupComplete
+        case profile
         case policy
         case zone
         case activeSession
@@ -76,6 +80,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         isSetupComplete = try container.decode(Bool.self, forKey: .isSetupComplete)
+        profile = try container.decodeIfPresent(CampusProfile.self, forKey: .profile) ?? CampusProfile()
         policy = try container.decode(AppPolicy.self, forKey: .policy)
         zone = try container.decode(CampusZone.self, forKey: .zone)
         activeSession = try container.decodeIfPresent(FocusSession.self, forKey: .activeSession)
@@ -93,6 +98,7 @@ public struct CampusLockState: Codable, Equatable, Sendable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(isSetupComplete, forKey: .isSetupComplete)
+        try container.encode(profile, forKey: .profile)
         try container.encode(policy, forKey: .policy)
         try container.encode(zone, forKey: .zone)
         try container.encodeIfPresent(activeSession, forKey: .activeSession)
@@ -107,6 +113,8 @@ public struct CampusLockState: Codable, Equatable, Sendable {
 
 public enum CampusLockEvent: Equatable, Sendable {
     case completeSetup
+    case updateDisplayName(String)
+    case selectSchool(CampusSchoolSelection)
     case updatePolicy(AppPolicy)
     case updateRadius(Double)
     case updateLocation(Coordinate)
@@ -118,6 +126,7 @@ public enum CampusLockEvent: Equatable, Sendable {
     case startHallPass(Date, TimeInterval)
     case endHallPass(Date)
     case resetAttendanceData
+    case restartOnboarding
 }
 
 public struct CampusLockReducer: Sendable {
@@ -127,6 +136,12 @@ public struct CampusLockReducer: Sendable {
         switch event {
         case .completeSetup:
             state.isSetupComplete = true
+
+        case let .updateDisplayName(displayName):
+            state.profile.displayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        case let .selectSchool(school):
+            state.profile.school = school
 
         case let .updatePolicy(policy):
             state.policy = policy
@@ -181,6 +196,14 @@ public struct CampusLockReducer: Sendable {
             state.activeHallPass = nil
 
         case .resetAttendanceData:
+            state.activeSession = nil
+            state.activeZoneState = .inside
+            state.activeHallPass = nil
+            state.attendanceRecords = []
+
+        case .restartOnboarding:
+            state.isSetupComplete = false
+            state.profile = CampusProfile()
             state.activeSession = nil
             state.activeZoneState = .inside
             state.activeHallPass = nil
