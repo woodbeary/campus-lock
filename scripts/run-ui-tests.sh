@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 
 scheme="${SCHEME:-CampusLock}"
 configuration="${CONFIGURATION:-Debug}"
-development_team="${DEVELOPMENT_TEAM:-YOUR_TEAM_ID}"
+development_team="${DEVELOPMENT_TEAM:?Set DEVELOPMENT_TEAM to your Apple team ID}"
 destination="${E2E_DESTINATION:-}"
 
 xcodegen generate

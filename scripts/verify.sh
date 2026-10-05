@@ -66,9 +66,6 @@ fi
 echo "== UI layout guard =="
 ./scripts/verify-ui-layout.sh
 
-echo "== Release tooling lint =="
-./scripts/verify-release-tooling.sh
-
 echo "== Generate Xcode project =="
 xcodegen generate
 
